@@ -10,9 +10,6 @@ import (
 
 const baseURL = "http://localhost:8000"
 
-type getCatalogResponse struct {
-}
-
 func (s *APISuite) TestGetCatalog() {
 	require := s.Require()
 	req, _ := http.NewRequest(http.MethodGet, buildURL("/api/products/catalog"), nil)
@@ -60,6 +57,7 @@ func (s *APISuite) TestGetCategories() {
 		require.NotNil(category)
 		ranks = append(ranks, category.Rank)
 	}
+
 	require.Equal(10, len(out.Categories))
 	require.True(checkIsDescending(ranks))
 }
