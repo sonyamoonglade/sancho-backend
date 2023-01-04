@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6
+    restart: on-failure
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data:/data/db
+      - ${APP_SRC}/configs/dev.yml:/etc/backend/config.yml
+    networks:
+      - inet
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=adminpwd
+      - MONGO_INITDB_DATABASE=admin
+
+  sancho-backend:
+    build:
+      context: .
+      dockerfile: ${APP_SRC}/docker/development/Dockerfile
+    restart: on-failure
+    volumes:
+      - ${APP_SRC}:/app
+      - /app/docker
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI
+      - DB_NAME
+      - APP_PORT
+    ports:
+      - "5000:5000"
+    networks:
+      - inet
+
+networks:
+  inet:
+    driver: bridge

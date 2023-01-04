@@ -18,11 +18,13 @@ func NewLogger(cfg Config) error {
 	builder := zap.NewProductionConfig()
 	builder.DisableStacktrace = true
 	builder.Development = false
-	builder.Encoding = "JSON"
+	builder.Encoding = "json"
+
 	builder.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	if cfg.Strict {
 		builder.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
 	}
+
 	if cfg.Production {
 		builder.OutputPaths = cfg.Out
 	}
@@ -35,6 +37,6 @@ func NewLogger(cfg Config) error {
 	return nil
 }
 
-func GetLogger() *zap.Logger {
+func Get() *zap.Logger {
 	return globalLogger
 }
