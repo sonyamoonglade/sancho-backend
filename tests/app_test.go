@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/database"
 	handler "github.com/sonyamoonglade/sancho-backend/internal/handler"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
@@ -28,6 +29,8 @@ type APISuite struct {
 	handler  *handler.Handler
 	services *service.Services
 	storages *storage.Storages
+
+	app *fiber.App
 }
 
 func TestAPISuite(t *testing.T) {
@@ -52,13 +55,25 @@ func (s *APISuite) SetupSuite() {
 	if err := s.populateDB(ctx); err != nil {
 		s.FailNow("failed to populate database", err)
 	}
+
+	app := fiber.New(fiber.Config{
+		Immutable:    true,
+		ReadTimeout:  time.Second * 10,
+		WriteTimeout: time.Second * 10,
+	})
+
+	s.app = app
+	s.handler.InitAPI(app)
+}
+
+func (s *APISuite) TearDownSuite() {
+	s.db.Close(context.Background()) //nolint:errcheck
 }
 
 func (s *APISuite) initDeps(mongo *database.Mongo) {
-	storages := storage.NewStorages(s.db)
+	storages := storage.NewStorages(mongo)
 	services := service.NewServices(service.Deps{Storages: storages})
 	h := handler.NewHandler(services)
-
 	s.handler = h
 	s.storages = storages
 	s.services = services

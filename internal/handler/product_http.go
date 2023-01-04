@@ -19,7 +19,11 @@ func (h Handler) GetCatalog(c *fiber.Ctx) error {
 }
 
 func (h Handler) GetCategories(c *fiber.Ctx) error {
-	categories, err := h.services.Product.GetAllCategories(c.Context(), true)
+	var (
+		sortedStr = c.Query("sorted", "1" /* true by default */)
+		sorted    = sortedStr == "1"
+	)
+	categories, err := h.services.Product.GetAllCategories(c.Context(), sorted)
 	if err != nil {
 		return err
 	}
@@ -33,6 +37,7 @@ func (h Handler) CreateProduct(c *fiber.Ctx) error {
 	if err := c.BodyParser(&inp); err != nil {
 		return err
 	}
+
 	if ok, msg := validation.ValidateFeatures(inp.Features); !ok {
 		return c.Status(http.StatusBadRequest).SendString(msg)
 	}

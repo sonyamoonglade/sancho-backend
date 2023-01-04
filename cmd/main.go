@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/database"
 	"github.com/sonyamoonglade/sancho-backend/internal/config"
 	"github.com/sonyamoonglade/sancho-backend/logger"
@@ -45,6 +46,15 @@ func run() error {
 		return fmt.Errorf("error connecting to mongo: %v", err)
 	}
 	_ = mongo
+
+	app := fiber.New(fiber.Config{
+		Immutable:    true,
+		ReadTimeout:  time.Second * 10,
+		WriteTimeout: time.Second * 10,
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			return nil
+		},
+	})
 
 	logger.Get().Info("application is running",
 		zap.String("port", cfg.App.Port),

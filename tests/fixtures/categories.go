@@ -17,7 +17,7 @@ func GetCategories(n int) []domain.Category {
 func generateCategory() domain.Category {
 	return domain.Category{
 		CategoryID: primitive.NewObjectID().String(),
-		Rank:       f.Int32(),
+		Rank:       int32(f.Number(1, 10)),
 		Name:       f.BeerName(),
 	}
 }
