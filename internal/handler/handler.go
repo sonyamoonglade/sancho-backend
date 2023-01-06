@@ -2,21 +2,29 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/sonyamoonglade/sancho-backend/internal/handler/middleware"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 )
 
 type Handler struct {
-	services *service.Services
+	services    *service.Services
+	middlewares *middleware.Middlewares
 }
 
-func NewHandler(services *service.Services) *Handler {
+func NewHandler(services *service.Services, middlewares *middleware.Middlewares) *Handler {
 	return &Handler{
-		services: services,
+		services:    services,
+		middlewares: middlewares,
 	}
 }
 
 func (h Handler) InitAPI(router fiber.Router) {
+	var (
+		m = h.middlewares
+	)
+
 	api := router.Group("/api")
+
 	{
 		h.initProductAPI(api)
 	}
