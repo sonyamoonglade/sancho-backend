@@ -17,11 +17,11 @@ var (
 	RoleWorker   = Role{"worker"}
 	RoleAdmin    = Role{"admin"}
 
-	permissions = map[Role]int{
-		RoleUnknown:  0,
-		RoleCustomer: 1,
-		RoleWorker:   2,
-		RoleAdmin:    3,
+	permissions = map[string]int{
+		RoleUnknown.R:  0,
+		RoleCustomer.R: 1,
+		RoleWorker.R:   2,
+		RoleAdmin.R:    3,
 	}
 )
 
@@ -48,7 +48,7 @@ func (r Role) String() string {
 
 // CheckPermissions checks if compareWith Role has higher or equal permissions as current Role
 func (r Role) CheckPermissions(required Role) bool {
-	return permissions[r] >= permissions[required]
+	return permissions[r.R] >= permissions[required.R]
 }
 
 func (r Role) MarshalJSON() ([]byte, error) {

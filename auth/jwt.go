@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	ErrInvalidSigningMethod = errors.New("invalid signing method")
 	ErrTokenExpired         = errors.New("token has expired")
 	ErrNotEnoughPermissions = errors.New("not enough permissions")
 	ErrInvalidIssuer        = errors.New("invalid issuer")
@@ -36,6 +35,8 @@ type Claims struct {
 
 type TokenProvider interface {
 	GenerateNewPair(data UserAuth) (Pair, error)
+	// GenerateNewPairWithTTL will return access token with custom ttl
+	GenerateNewPairWithTTL(data UserAuth, ttl time.Duration) (Pair, error)
 	Validate(token string, role domain.Role) (bool, error)
 }
 
@@ -73,6 +74,23 @@ func (p provider) GenerateNewPair(data UserAuth) (Pair, error) {
 		UserAuth:  data,
 		Issuer:    p.issuer,
 		ExpiresAt: time.Now().Add(p.ttl),
+	}
+	accessToken, err := p.builder.Build(payload)
+	if err != nil {
+		return Pair{}, err
+	}
+
+	return Pair{
+		RefreshToken: uuid.NewString(),
+		AccessToken:  accessToken.String(),
+	}, nil
+}
+
+func (p provider) GenerateNewPairWithTTL(data UserAuth, ttl time.Duration) (Pair, error) {
+	payload := Claims{
+		UserAuth:  data,
+		Issuer:    p.issuer,
+		ExpiresAt: time.Now().Add(ttl),
 	}
 	accessToken, err := p.builder.Build(payload)
 	if err != nil {

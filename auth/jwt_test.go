@@ -126,7 +126,7 @@ func TestTokenProvider(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("should generate new pair from 1st issuer and validate on 2nd issuer and retreive ErrInvalidIssuer", func(t *testing.T) {
+	t.Run("should generate new pair from 1st issuer and validate on 2nd issuer and retrieve ErrInvalidIssuer", func(t *testing.T) {
 		p1 := p
 		p2, err := NewProvider(ttl, key, "some-random-issuer")
 		require.NoError(t, err)
@@ -142,5 +142,58 @@ func TestTokenProvider(t *testing.T) {
 		require.Error(t, err)
 		require.False(t, ok)
 		require.Equal(t, ErrInvalidIssuer, err)
+	})
+
+	t.Run("should generate new pair with custom ttl and return ErrExpired because new ttl is lower than default", func(t *testing.T) {
+		var (
+			// default ttl
+			ttl    = time.Millisecond * 5
+			key    = []byte("abcd")
+			issuer = "app.com"
+		)
+		p, err := NewProvider(ttl, key, issuer)
+		require.NoError(t, err)
+
+		customTTl := time.Millisecond * 2
+		tokens, err := p.GenerateNewPairWithTTL(UserAuth{
+			Role:   domain.RoleCustomer,
+			UserID: uuid.NewString(),
+		}, customTTl)
+		require.NoError(t, err)
+
+		// access token has ttl about 2 milliseconds so if we sleep for 2ms
+		// token will be expired by that time, because default ttl is overridden.
+		time.Sleep(time.Millisecond * 2)
+
+		ok, err := p.Validate(tokens.AccessToken, domain.RoleCustomer)
+		require.Error(t, err)
+		require.Equal(t, ErrTokenExpired, err)
+		require.False(t, ok)
+	})
+
+	t.Run("should generate new pair with custom ttl and return true because new ttl is much higher than default", func(t *testing.T) {
+		var (
+			// default ttl
+			ttl    = time.Millisecond * 2
+			key    = []byte("abcd")
+			issuer = "app.com"
+		)
+		p, err := NewProvider(ttl, key, issuer)
+		require.NoError(t, err)
+
+		customTTl := time.Millisecond * 200
+		tokens, err := p.GenerateNewPairWithTTL(UserAuth{
+			Role:   domain.RoleCustomer,
+			UserID: uuid.NewString(),
+		}, customTTl)
+		require.NoError(t, err)
+
+		// access token has ttl about 200ms and thus if we sleep for 4ms (higher than default ttl of 2ms)
+		// we'll get absolutely fine result and token will be valid.
+		time.Sleep(time.Millisecond * 4)
+
+		ok, err := p.Validate(tokens.AccessToken, domain.RoleCustomer)
+		require.NoError(t, err)
+		require.True(t, ok)
 	})
 }
