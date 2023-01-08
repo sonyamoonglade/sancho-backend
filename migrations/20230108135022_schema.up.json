@@ -1,0 +1,21 @@
+[{
+  "createIndexes": "category",
+  "indexes": [{
+    "key": {
+      "name": 1
+    },
+    "name": "name_unique",
+    "unique": true
+  }]
+},
+  {
+    "createIndexes": "product",
+    "indexes": [{
+      "key": {
+        "name": 1
+      },
+      "name": "name_unique",
+      "unique": true
+    }]
+  }
+]

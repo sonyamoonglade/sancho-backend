@@ -117,6 +117,10 @@ func (s *APISuite) TestCreateProduct() {
 		require.NoError(err)
 		require.Equal(http.StatusNotFound, res.StatusCode)
 	})
+
+	t.Run("should not create product because product with such name already exists", func(t *testing.T) {
+
+	})
 }
 
 func readBody(rc io.ReadCloser) []byte {
