@@ -59,6 +59,8 @@ func run() error {
 	logger.Get().Info("application is running",
 		zap.String("port", cfg.App.Port),
 	)
+	_ = app
+	select {}
 
 	return nil
 }

@@ -40,6 +40,9 @@ func (p ProductService) GetAllCategories(ctx context.Context, sorted bool) ([]do
 func (p ProductService) Create(ctx context.Context, dto dto.CreateProductDTO) error {
 	category, err := p.productStorage.GetCategoryByName(ctx, dto.CategoryName)
 	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return domain.ErrCategoryNotFound
+		}
 		return appErrors.WithContext("productStorage.GetCategoryByName", err)
 	}
 

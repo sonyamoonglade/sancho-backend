@@ -18,9 +18,33 @@ func GetProduct() domain.Product {
 	return generateProduct().(domain.Product)
 }
 
+func GetLiquidFeatures() domain.Features {
+	return domain.Features{
+		IsLiquid:    true,
+		Weight:      0,
+		Volume:      int32(f.IntRange(100, 300)),
+		EnergyValue: 0,
+		Nutrients:   nil,
+	}
+}
+
+func GetNonLiquidFeatures() domain.Features {
+	return domain.Features{
+		IsLiquid:    false,
+		Weight:      int32(f.IntRange(100, 200)),
+		Volume:      0,
+		EnergyValue: int32(f.IntRange(200, 500)),
+		Nutrients: &domain.Nutrients{
+			Carbs:    f.Int32(),
+			Proteins: f.Int32(),
+			Fats:     f.Int32(),
+		},
+	}
+}
+
 func generateProduct() interface{} {
 	return domain.Product{
-		ProductID:   primitive.NewObjectID().String(),
+		ProductID:   primitive.NewObjectID(),
 		Name:        f.Name(),
 		TranslateRU: f.Name(),
 		Description: f.LoremIpsumSentence(20),

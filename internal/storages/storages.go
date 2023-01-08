@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	CollectionProduct string = "product"
+	CollectionProduct  string = "product"
+	CollectionCategory string = "category"
 )
 
 var (
@@ -22,7 +23,7 @@ type Storages struct {
 
 func NewStorages(db *database.Mongo) *Storages {
 	return &Storages{
-		Product: NewProductStorage(db.Collection(CollectionProduct)),
+		Product: NewProductStorage(db.Collection(CollectionProduct), db.Collection(CollectionCategory)),
 	}
 }
 

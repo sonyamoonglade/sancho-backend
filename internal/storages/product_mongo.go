@@ -12,18 +12,22 @@ import (
 )
 
 type ProductStorage struct {
-	db *mongo.Collection
+	products   *mongo.Collection
+	categories *mongo.Collection
 }
 
-func NewProductStorage(db *mongo.Collection) Product {
-	return &ProductStorage{db: db}
+func NewProductStorage(products *mongo.Collection, categories *mongo.Collection) Product {
+	return &ProductStorage{
+		products:   products,
+		categories: categories,
+	}
 }
 
 func (p ProductStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
 	opts := options.Find()
 	opts.SetSort(bson.M{"category.rank": -1})
 
-	cur, err := p.db.Find(ctx, bson.M{}, opts)
+	cur, err := p.products.Find(ctx, bson.M{}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -41,10 +45,10 @@ func (p ProductStorage) GetAllCategories(ctx context.Context, sorted bool) ([]do
 	if sorted {
 		opts = options.Find()
 		// categories should be sorted with descending order
-		opts.SetSort(bson.M{"category.rank": -1})
+		opts.SetSort(bson.M{"rank": -1})
 	}
 
-	cur, err := p.db.Find(ctx, bson.M{}, opts)
+	cur, err := p.categories.Find(ctx, bson.M{}, opts)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, ErrNotFound
@@ -61,10 +65,10 @@ func (p ProductStorage) GetAllCategories(ctx context.Context, sorted bool) ([]do
 }
 
 func (p ProductStorage) GetCategoryByName(ctx context.Context, categoryName string) (domain.Category, error) {
-	res := p.db.FindOne(ctx, bson.M{"category.name": categoryName}, nil)
+	res := p.categories.FindOne(ctx, bson.M{"name": categoryName}, nil)
 	if err := res.Err(); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return domain.Category{}, domain.ErrCategoryNotFound
+			return domain.Category{}, ErrNotFound
 		}
 		return domain.Category{}, err
 	}
@@ -76,7 +80,7 @@ func (p ProductStorage) GetCategoryByName(ctx context.Context, categoryName stri
 }
 
 func (p ProductStorage) Create(ctx context.Context, product domain.Product) error {
-	_, err := p.db.InsertOne(ctx, product)
+	_, err := p.products.InsertOne(ctx, product)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			return ErrAlreadyExists
@@ -87,7 +91,7 @@ func (p ProductStorage) Create(ctx context.Context, product domain.Product) erro
 }
 
 func (p ProductStorage) Delete(ctx context.Context, productID string) error {
-	result, err := p.db.DeleteOne(ctx, bson.M{"_id": ToObjectID(productID)})
+	result, err := p.products.DeleteOne(ctx, bson.M{"_id": ToObjectID(productID)})
 	if err != nil {
 		return err
 	}
@@ -104,7 +108,7 @@ func (p ProductStorage) Update(ctx context.Context, productID string, dto dto.Up
 
 func (p ProductStorage) Approve(ctx context.Context, productID string) error {
 	query := bson.D{{"$set", bson.D{{"approve", true}}}}
-	result, err := p.db.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
+	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
 	if err != nil {
 		return err
 	}
@@ -116,7 +120,7 @@ func (p ProductStorage) Approve(ctx context.Context, productID string) error {
 
 func (p ProductStorage) ChangeImageURL(ctx context.Context, productID string, imageURL string) error {
 	query := bson.D{{"$set", bson.D{{"imageURL", imageURL}}}}
-	result, err := p.db.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
+	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
 	if err != nil {
 		return err
 	}

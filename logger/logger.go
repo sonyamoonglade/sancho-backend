@@ -16,11 +16,11 @@ type Config struct {
 func NewLogger(cfg Config) error {
 
 	builder := zap.NewProductionConfig()
-	builder.DisableStacktrace = true
+	builder.DisableStacktrace = !cfg.EnableStacktrace
 	builder.Development = false
 	builder.Encoding = "json"
 
-	builder.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	builder.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	if cfg.Strict {
 		builder.Level = zap.NewAtomicLevelAt(zap.WarnLevel)
 	}

@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/sonyamoonglade/sancho-backend/auth"
 	"github.com/sonyamoonglade/sancho-backend/database"
 	handler "github.com/sonyamoonglade/sancho-backend/internal/handler"
+	"github.com/sonyamoonglade/sancho-backend/internal/handler/middleware"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
-	"github.com/sonyamoonglade/sancho-backend/tests/fixtures"
+	"github.com/sonyamoonglade/sancho-backend/logger"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -29,6 +31,8 @@ type APISuite struct {
 	handler  *handler.Handler
 	services *service.Services
 	storages *storage.Storages
+
+	tokenProvider auth.TokenProvider
 
 	app *fiber.App
 }
@@ -60,6 +64,7 @@ func (s *APISuite) SetupSuite() {
 		Immutable:    true,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 10,
+		ErrorHandler: handler.HandleError,
 	})
 
 	s.app = app
@@ -71,18 +76,44 @@ func (s *APISuite) TearDownSuite() {
 }
 
 func (s *APISuite) initDeps(mongo *database.Mongo) {
+	logger.NewLogger(logger.Config{
+		Out:              nil,
+		Strict:           false,
+		Production:       false,
+		EnableStacktrace: true,
+	})
+	logger.Get().Info("Booting e2e test")
+
 	storages := storage.NewStorages(mongo)
 	services := service.NewServices(service.Deps{Storages: storages})
-	h := handler.NewHandler(services)
+
+	var (
+		ttl    = time.Second * 5
+		key    = []byte("mama is ok")
+		issuer = "localhost"
+	)
+	tokenProvider, err := auth.NewProvider(ttl, key, issuer)
+	if err != nil {
+		panic(err)
+	}
+	jwtAuth := middleware.NewJWTAuthMiddleware(tokenProvider)
+	xReqID := new(middleware.XRequestIDMiddleware)
+	middlewares := middleware.NewMiddlewares(jwtAuth, xReqID)
+
+	h := handler.NewHandler(services, middlewares)
 	s.handler = h
 	s.storages = storages
 	s.services = services
+	s.tokenProvider = tokenProvider
 	s.db = mongo
 }
 
 func (s *APISuite) populateDB(ctx context.Context) error {
-	products := fixtures.GetProducts(10)
 	_, err := s.db.Collection(storage.CollectionProduct).InsertMany(ctx, products, nil)
+	if err != nil {
+		return err
+	}
+	_, err = s.db.Collection(storage.CollectionCategory).InsertMany(ctx, categories, nil)
 	if err != nil {
 		return err
 	}
