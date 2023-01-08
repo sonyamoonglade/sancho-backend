@@ -8,11 +8,12 @@ import (
 )
 
 type Product interface {
+	GetByID(ctx context.Context, productID string) (domain.Product, error)
 	GetAll(ctx context.Context) ([]domain.Product, error)
 	GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error)
 	Create(ctx context.Context, dto dto.CreateProductDTO) (string, error)
 	Delete(ctx context.Context, productID string) error
-	Update(ctx context.Context, productID string, dto dto.UpdateProductDTO) error
+	Update(ctx context.Context, dto dto.UpdateProductDTO) error
 	Approve(ctx context.Context, productID string) error
 	Disapprove(ctx context.Context, productID string) error
 }

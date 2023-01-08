@@ -64,6 +64,7 @@ func (h Handler) DeleteProduct(c *fiber.Ctx) error {
 }
 
 func (h Handler) UpdateProduct(c *fiber.Ctx) error {
+
 	return nil
 }
 

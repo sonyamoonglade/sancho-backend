@@ -29,10 +29,10 @@ func (d CreateProductDTO) ToDomain() domain.Product {
 }
 
 type UpdateProductDTO struct {
-	Name        *string
-	TranslateRU *string
-	Description *string
-	Price       *int32
-	Category    *domain.Category
-	Features    *domain.Features
+	ProductID    string
+	Name         *string
+	TranslateRU  *string
+	Description  *string
+	CategoryName *string
+	Price        *int64
 }

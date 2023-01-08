@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/database"
 	"github.com/sonyamoonglade/sancho-backend/internal/config"
+	"github.com/sonyamoonglade/sancho-backend/internal/handler"
 	"github.com/sonyamoonglade/sancho-backend/logger"
 	"go.uber.org/zap"
 )
@@ -48,18 +49,15 @@ func run() error {
 	_ = mongo
 
 	app := fiber.New(fiber.Config{
-		Immutable:    true,
+		Immutable:    false,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 10,
-		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			return nil
-		},
+		ErrorHandler: handler.HandleError,
 	})
 
 	logger.Get().Info("application is running",
 		zap.String("port", cfg.App.Port),
 	)
-	_ = app
 
 	return app.Listen(":" + cfg.App.Port)
 }

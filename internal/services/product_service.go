@@ -20,6 +20,17 @@ func NewProductService(productStorage storage.Product) Product {
 	return &ProductService{productStorage: productStorage}
 }
 
+func (p ProductService) GetByID(ctx context.Context, productID string) (domain.Product, error) {
+	product, err := p.productStorage.GetByID(ctx, productID)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return domain.Product{}, domain.ErrProductNotFound
+		}
+		return domain.Product{}, appErrors.WithContext("productStorage.GetByID", err)
+	}
+	return product, nil
+}
+
 func (p ProductService) GetAll(ctx context.Context) ([]domain.Product, error) {
 	catalog, err := p.productStorage.GetAll(ctx)
 	if err != nil {
@@ -73,7 +84,7 @@ func (p ProductService) Delete(ctx context.Context, productID string) error {
 	return nil
 }
 
-func (p ProductService) Update(ctx context.Context, productID string, dto dto.UpdateProductDTO) error {
+func (p ProductService) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
 	//TODO implement me
 	panic("implement me")
 }

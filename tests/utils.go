@@ -38,3 +38,7 @@ func checkIsDescending(arr []int32) bool {
 func buildURL(path string) string {
 	return baseURL + path
 }
+
+func StringPtr(s string) *string { return &s }
+
+func IntPtr[N int | int8 | int16 | int32 | int64](n N) *N { return &n }
