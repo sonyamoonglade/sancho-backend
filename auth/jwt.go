@@ -7,12 +7,14 @@ import (
 	"github.com/cristalhq/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
+	"github.com/sonyamoonglade/sancho-backend/logger"
+	"go.uber.org/zap"
 )
 
 var (
-	ErrTokenExpired         = errors.New("token has expired")
-	ErrNotEnoughPermissions = errors.New("not enough permissions")
-	ErrInvalidIssuer        = errors.New("invalid issuer")
+	ErrTokenExpired  = errors.New("token has expired")
+	ErrInvalidIssuer = errors.New("invalid issuer")
+	ErrInvalidToken  = errors.New("invalid token")
 )
 
 type Pair struct {
@@ -37,7 +39,7 @@ type TokenProvider interface {
 	GenerateNewPair(data UserAuth) (Pair, error)
 	// GenerateNewPairWithTTL will return access token with custom ttl
 	GenerateNewPairWithTTL(data UserAuth, ttl time.Duration) (Pair, error)
-	Validate(token string, role domain.Role) (bool, error)
+	ParseAndValidate(token string) (UserAuth, error)
 }
 
 type provider struct {
@@ -103,37 +105,25 @@ func (p provider) GenerateNewPairWithTTL(data UserAuth, ttl time.Duration) (Pair
 	}, nil
 }
 
-func (p provider) Validate(token string, requiredRole domain.Role) (bool, error) {
+func (p provider) ParseAndValidate(token string) (UserAuth, error) {
 	var (
-		now        = time.Now()
-		tokenBytes = []byte(token)
+		tokenPayload Claims
+		now          = time.Now()
+		tokenBytes   = []byte(token)
 	)
-	jwtToken, err := jwt.Parse(tokenBytes, p.verifier)
-	if err != nil {
-		return false, err
-	}
-
-	if err := p.verifier.Verify(jwtToken); err != nil {
-		return false, err
-	}
-
-	var tokenPayload Claims
 	if err := jwt.ParseClaims(tokenBytes, p.verifier, &tokenPayload); err != nil {
-		return false, err
+		if errors.Is(err, jwt.ErrInvalidFormat) || errors.Is(err, jwt.ErrInvalidSignature) {
+			return UserAuth{}, ErrInvalidToken
+		}
+		logger.Get().Error("jwt.ParseClaims: ", zap.Error(err))
+		return UserAuth{}, err
 	}
-
 	if tokenPayload.ExpiresAt.Before(now) {
-		return false, ErrTokenExpired
+		return UserAuth{}, ErrTokenExpired
 	}
-
-	if !tokenPayload.Role.CheckPermissions(requiredRole) {
-		return false, ErrNotEnoughPermissions
-	}
-
 	if tokenPayload.Issuer != p.issuer {
-		return false, ErrInvalidIssuer
+		return UserAuth{}, ErrInvalidIssuer
 	}
-
 	// Validation successful
-	return true, nil
+	return tokenPayload.UserAuth, nil
 }

@@ -7,7 +7,9 @@ import (
 
 type XRequestIDMiddleware struct{}
 
-func (m XRequestIDMiddleware) Use(c *fiber.Ctx) error {
-	c.Set("X-Request-Id", uuid.NewString())
-	return c.Next()
+func (m XRequestIDMiddleware) Use() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		c.Set("X-Request-Id", uuid.NewString())
+		return c.Next()
+	}
 }

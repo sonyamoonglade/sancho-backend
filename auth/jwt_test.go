@@ -20,7 +20,7 @@ func TestTokenProvider(t *testing.T) {
 	p, err := NewProvider(ttl, key, issuer)
 	require.NoError(t, err)
 
-	t.Run("should validate valid token and return true", func(t *testing.T) {
+	t.Run("should validate token, return true and payload", func(t *testing.T) {
 		userID := uuid.NewString()
 		signer, err := jwt.NewSignerHS(jwt.HS256, key)
 		require.NoError(t, err)
@@ -36,35 +36,9 @@ func TestTokenProvider(t *testing.T) {
 		token, err := builder.Build(tokenPayload)
 		require.NoError(t, err)
 
-		// REQUIRED ROLE
-		requiredRole := domain.RoleCustomer
-		ok, err := p.Validate(token.String(), requiredRole)
+		userAuth, err := p.ParseAndValidate(token.String())
 		require.NoError(t, err)
-		require.True(t, ok)
-	})
-	t.Run("should validate invalid token and return false and ErrNotEnoughPermissions because required role is higher", func(t *testing.T) {
-		userID := uuid.New().String()
-		signer, err := jwt.NewSignerHS(jwt.HS256, key)
-		require.NoError(t, err)
-		builder := jwt.NewBuilder(signer)
-		tokenPayload := Claims{
-			// Sign with RoleCustomer
-			UserAuth: UserAuth{
-				Role:   domain.RoleCustomer,
-				UserID: userID,
-			},
-			Issuer:    issuer,
-			ExpiresAt: time.Now().Add(ttl),
-		}
-		token, err := builder.Build(tokenPayload)
-		require.NoError(t, err)
-
-		// REQUIRED ROLE (ADMIN)
-		requiredRole := domain.RoleAdmin
-		ok, err := p.Validate(token.String(), requiredRole)
-		require.False(t, ok)
-		require.Error(t, err)
-		require.Equal(t, ErrNotEnoughPermissions, err)
+		require.EqualValues(t, tokenPayload.UserAuth, userAuth)
 	})
 
 	t.Run("should generate new pair of refresh and access tokens", func(t *testing.T) {
@@ -86,25 +60,9 @@ func TestTokenProvider(t *testing.T) {
 		tokens, err := p.GenerateNewPair(data)
 		require.NoError(t, err)
 
-		requiredRole := domain.RoleCustomer
-		ok, err := p.Validate(tokens.AccessToken, requiredRole)
+		userAuth, err := p.ParseAndValidate(tokens.AccessToken)
 		require.NoError(t, err)
-		require.True(t, ok)
-	})
-
-	t.Run("should generate pair and validate access token and return false because role is too low", func(t *testing.T) {
-		data := UserAuth{
-			Role:   domain.RoleCustomer,
-			UserID: uuid.NewString(),
-		}
-		tokens, err := p.GenerateNewPair(data)
-		require.NoError(t, err)
-
-		requiredRole := domain.RoleAdmin
-		ok, err := p.Validate(tokens.AccessToken, requiredRole)
-		require.Error(t, err)
-		require.False(t, ok)
-		require.Equal(t, ErrNotEnoughPermissions, err)
+		require.EqualValues(t, data, userAuth)
 	})
 
 	t.Run("should generate new pair and wait for expiration then validate and return false with ErrExpired", func(t *testing.T) {
@@ -119,11 +77,10 @@ func TestTokenProvider(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 6)
 
-		requiredRole := domain.RoleCustomer
-		ok, err := p.Validate(tokens.AccessToken, requiredRole)
-		require.Equal(t, ErrTokenExpired, err)
-		require.False(t, ok)
+		userAuth, err := p.ParseAndValidate(tokens.AccessToken)
 		require.Error(t, err)
+		require.Equal(t, ErrTokenExpired, err)
+		require.Zero(t, userAuth)
 	})
 
 	t.Run("should generate new pair from 1st issuer and validate on 2nd issuer and retrieve ErrInvalidIssuer", func(t *testing.T) {
@@ -138,10 +95,10 @@ func TestTokenProvider(t *testing.T) {
 		require.NoError(t, err)
 
 		// Required role is OK but p1 and p2 has got different issuers, so expect error
-		ok, err := p2.Validate(tokensP1.AccessToken, domain.RoleCustomer)
+		userAuth, err := p2.ParseAndValidate(tokensP1.AccessToken)
 		require.Error(t, err)
-		require.False(t, ok)
 		require.Equal(t, ErrInvalidIssuer, err)
+		require.Zero(t, userAuth)
 	})
 
 	t.Run("should generate new pair with custom ttl and return ErrExpired because new ttl is lower than default", func(t *testing.T) {
@@ -165,10 +122,10 @@ func TestTokenProvider(t *testing.T) {
 		// token will be expired by that time, because default ttl is overridden.
 		time.Sleep(time.Millisecond * 2)
 
-		ok, err := p.Validate(tokens.AccessToken, domain.RoleCustomer)
+		userAuth, err := p.ParseAndValidate(tokens.AccessToken)
 		require.Error(t, err)
 		require.Equal(t, ErrTokenExpired, err)
-		require.False(t, ok)
+		require.Zero(t, userAuth)
 	})
 
 	t.Run("should generate new pair with custom ttl and return true because new ttl is much higher than default", func(t *testing.T) {
@@ -192,8 +149,58 @@ func TestTokenProvider(t *testing.T) {
 		// we'll get absolutely fine result and token will be valid.
 		time.Sleep(time.Millisecond * 4)
 
-		ok, err := p.Validate(tokens.AccessToken, domain.RoleCustomer)
+		userAuth, err := p.ParseAndValidate(tokens.AccessToken)
 		require.NoError(t, err)
-		require.True(t, ok)
+		require.NotZero(t, userAuth)
+	})
+
+	t.Run("should return ErrInvalidToken because token is in invalid format", func(t *testing.T) {
+		token := "some-random-token"
+		userAuth, err := p.ParseAndValidate(token)
+		require.Error(t, err)
+		require.Zero(t, userAuth)
+		require.Equal(t, ErrInvalidToken, err)
+	})
+
+	t.Run("should return ErrInvalidToken because token has corrupted header", func(t *testing.T) {
+		tokens, _ := p.GenerateNewPair(UserAuth{
+			Role:   domain.RoleCustomer,
+			UserID: uuid.NewString(),
+		})
+		var (
+			byteToken      = []byte(tokens.AccessToken)
+			corruptedToken string
+		)
+		// Corrupt. Don't change 0th, 1st, 2nd chars, see jwt/parse.go:39
+		byteToken[4] = byte('o')
+		byteToken[5] = byte('j')
+		byteToken[6] = byte('m')
+		corruptedToken = string(byteToken)
+
+		userAuth, err := p.ParseAndValidate(corruptedToken)
+		require.Error(t, err)
+		require.Zero(t, userAuth)
+		require.Equal(t, ErrInvalidToken, err)
+	})
+
+	t.Run("should return ErrInvalidToken because token has corrupted signature", func(t *testing.T) {
+		tokens, _ := p.GenerateNewPair(UserAuth{
+			Role:   domain.RoleCustomer,
+			UserID: uuid.NewString(),
+		})
+		var (
+			byteToken      = []byte(tokens.AccessToken)
+			corruptedToken string
+		)
+		tl := len(byteToken)
+		byteToken[tl-2] = byte('o')
+		byteToken[tl-3] = byte('j')
+		byteToken[tl-4] = byte('m')
+		corruptedToken = string(byteToken)
+
+		userAuth, err := p.ParseAndValidate(corruptedToken)
+		require.Error(t, err)
+		require.Zero(t, userAuth)
+		require.Equal(t, ErrInvalidToken, err)
 	})
 }

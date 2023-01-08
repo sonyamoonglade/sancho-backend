@@ -19,12 +19,9 @@ func NewHandler(services *service.Services, middlewares *middleware.Middlewares)
 }
 
 func (h Handler) InitAPI(router fiber.Router) {
-	var (
-		m = h.middlewares
-	)
-
+	m := h.middlewares
 	api := router.Group("/api")
-
+	api.Use(m.XRequestID.Use())
 	{
 		h.initProductAPI(api)
 	}
