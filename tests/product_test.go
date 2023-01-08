@@ -1,11 +1,9 @@
 package tests
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"testing"
 
@@ -16,8 +14,6 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/handler/input"
 	"github.com/sonyamoonglade/sancho-backend/tests/fixtures"
 )
-
-const baseURL = "http://localhost:8000"
 
 func (s *APISuite) TestGetCatalog() {
 	require := s.Require()
@@ -314,35 +310,4 @@ func (s *APISuite) TestDisapproveProduct() {
 		require.Equal(http.StatusNotFound, res.StatusCode)
 	})
 
-}
-
-func readBody(rc io.ReadCloser) []byte {
-	b, err := io.ReadAll(rc)
-	if err != nil {
-		panic(err)
-	}
-	rc.Close()
-	return b
-}
-
-func newBody(b interface{}) io.Reader {
-	bodyBytes, err := json.Marshal(b)
-	if err != nil {
-		panic(err)
-	}
-	return bytes.NewReader(bodyBytes)
-}
-
-func checkIsDescending(arr []int32) bool {
-	for i := 1; i < len(arr); i++ {
-		a, b := arr[i-1], arr[i]
-		if a < b {
-			return false
-		}
-	}
-	return true
-}
-
-func buildURL(path string) string {
-	return baseURL + path
 }
