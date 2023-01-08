@@ -357,11 +357,11 @@ func (s *APISuite) TestUpdateProduct() {
 		product, err := s.services.Product.GetByID(context.Background(), productID)
 		require.NoError(err)
 
-		require.Equal(updateBody.Price, product.Price)
-		require.Equal(updateBody.Name, product.Name)
-		require.Equal(updateBody.ImageURL, product.ImageURL)
-		require.Equal(updateBody.TranslateRU, product.TranslateRU)
-		require.Equal(updateBody.Description, product.Description)
+		require.Equal(*updateBody.Price, product.Price)
+		require.Equal(*updateBody.Name, product.Name)
+		require.Equal(*updateBody.ImageURL, product.ImageURL)
+		require.Equal(*updateBody.TranslateRU, product.TranslateRU)
+		require.Equal(*updateBody.Description, product.Description)
 		// Should be changed to categoryDrinks during an update.
 		require.EqualValues(categoryDrinks, product.Category)
 	})
