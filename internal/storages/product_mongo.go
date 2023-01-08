@@ -107,7 +107,14 @@ func (p ProductStorage) Update(ctx context.Context, productID string, dto dto.Up
 }
 
 func (p ProductStorage) Approve(ctx context.Context, productID string) error {
-	query := bson.D{{"$set", bson.D{{"approve", true}}}}
+	query := bson.D{
+		bson.E{Key: "$set", Value: bson.D{
+			bson.E{
+				Key:   "isApproved",
+				Value: true,
+			},
+		}},
+	}
 	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
 	if err != nil {
 		return err
@@ -119,7 +126,14 @@ func (p ProductStorage) Approve(ctx context.Context, productID string) error {
 }
 
 func (p ProductStorage) ChangeImageURL(ctx context.Context, productID string, imageURL string) error {
-	query := bson.D{{"$set", bson.D{{"imageURL", imageURL}}}}
+	query := bson.D{
+		bson.E{Key: "$set", Value: bson.D{
+			bson.E{
+				Key:   "imageURL",
+				Value: imageURL,
+			},
+		}},
+	}
 	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
 	if err != nil {
 		return err

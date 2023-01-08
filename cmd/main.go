@@ -60,9 +60,8 @@ func run() error {
 		zap.String("port", cfg.App.Port),
 	)
 	_ = app
-	select {}
 
-	return nil
+	return app.Listen(":" + cfg.App.Port)
 }
 
 func readCmdArgs() (string, string, bool, bool) {
