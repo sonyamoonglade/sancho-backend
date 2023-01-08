@@ -42,15 +42,25 @@ func (h Handler) CreateProduct(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).SendString(msg)
 	}
 
-	if err := h.services.Product.Create(c.Context(), inp.ToDTO()); err != nil {
+	productID, err := h.services.Product.Create(c.Context(), inp.ToDTO())
+	if err != nil {
 		return err
 	}
 
-	return c.SendStatus(http.StatusCreated)
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
+		"productId": productID,
+	})
 }
 
 func (h Handler) DeleteProduct(c *fiber.Ctx) error {
-	return nil
+	productID := c.Params("id", "")
+	if productID == "" {
+		return c.Status(http.StatusBadRequest).SendString("empty id")
+	}
+	if err := h.services.Product.Delete(c.Context(), productID); err != nil {
+		return err
+	}
+	return c.SendStatus(http.StatusOK)
 }
 
 func (h Handler) UpdateProduct(c *fiber.Ctx) error {
@@ -58,9 +68,23 @@ func (h Handler) UpdateProduct(c *fiber.Ctx) error {
 }
 
 func (h Handler) ApproveProduct(c *fiber.Ctx) error {
-	return nil
+	productID := c.Params("id", "")
+	if productID == "" {
+		return c.Status(http.StatusBadRequest).SendString("empty id")
+	}
+	if err := h.services.Product.Approve(c.Context(), productID); err != nil {
+		return err
+	}
+	return c.SendStatus(http.StatusOK)
 }
 
-func (h Handler) ChangeImageURL(c *fiber.Ctx) error {
-	return nil
+func (h Handler) DisapproveProduct(c *fiber.Ctx) error {
+	productID := c.Params("id", "")
+	if productID == "" {
+		return c.Status(http.StatusBadRequest).SendString("empty id")
+	}
+	if err := h.services.Product.Disapprove(c.Context(), productID); err != nil {
+		return err
+	}
+	return c.SendStatus(http.StatusOK)
 }

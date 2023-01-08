@@ -27,20 +27,26 @@ func HandleError(c *fiber.Ctx, err error) error {
 	)
 	// Domain errors
 	msg, code := domainErrorToHTTP(err)
-	return c.Status(code).SendString(msg)
+	return c.Status(code).JSON(fiber.Map{
+		"message": msg,
+	})
 }
 
 func domainErrorToHTTP(err error) (string, int) {
 	is := errors.Is
 	switch true {
-	case is(err, domain.ErrCategoryNotFound):
-		return "category not found", http.StatusNotFound
+	case is(err, domain.ErrCategoryNotFound),
+		is(err, domain.ErrNoCategories),
+		is(err, domain.ErrProductNotFound):
+		return err.Error(), http.StatusNotFound
+
+	case is(err, domain.ErrProductAlreadyApproved),
+		is(err, domain.ErrProductAlreadyDisapproved):
+		return err.Error(), http.StatusBadRequest
+
 	case is(err, domain.ErrProductAlreadyExists):
-		return "product already exists", http.StatusConflict
-	case is(err, domain.ErrNoCategories):
-		return "no categories found", http.StatusNotFound
-	case is(err, domain.ErrProductNotFound):
-		return "product not found", http.StatusConflict
+		return err.Error(), http.StatusConflict
+
 	default:
 		return "internal error", http.StatusInternalServerError
 	}

@@ -8,6 +8,8 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	"github.com/sonyamoonglade/sancho-backend/internal/storages"
+	"github.com/sonyamoonglade/sancho-backend/logger"
+	"go.uber.org/zap"
 )
 
 type ProductService struct {
@@ -37,27 +39,28 @@ func (p ProductService) GetAllCategories(ctx context.Context, sorted bool) ([]do
 	return categories, nil
 }
 
-func (p ProductService) Create(ctx context.Context, dto dto.CreateProductDTO) error {
+func (p ProductService) Create(ctx context.Context, dto dto.CreateProductDTO) (string, error) {
 	category, err := p.productStorage.GetCategoryByName(ctx, dto.CategoryName)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrCategoryNotFound
+			return "", domain.ErrCategoryNotFound
 		}
-		return appErrors.WithContext("productStorage.GetCategoryByName", err)
+		return "", appErrors.WithContext("productStorage.GetCategoryByName", err)
 	}
 
 	product := dto.ToDomain()
 	product.Category = category
 
-	if err := p.productStorage.Create(ctx, product); err != nil {
+	productID, err := p.productStorage.Create(ctx, product)
+	if err != nil {
 		if errors.Is(err, storage.ErrAlreadyExists) {
-			return domain.ErrProductAlreadyExists
+			return "", domain.ErrProductAlreadyExists
 		}
 
-		return appErrors.WithContext("productStorage.Create", err)
+		return "", appErrors.WithContext("productStorage.Create", err)
 	}
 
-	return nil
+	return productID.Hex(), nil
 }
 
 func (p ProductService) Delete(ctx context.Context, productID string) error {
@@ -76,6 +79,16 @@ func (p ProductService) Update(ctx context.Context, productID string, dto dto.Up
 }
 
 func (p ProductService) Approve(ctx context.Context, productID string) error {
+	product, err := p.productStorage.GetByID(ctx, productID)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return domain.ErrProductNotFound
+		}
+		return appErrors.WithContext("productStorage.GetByID", err)
+	}
+	if product.IsApproved {
+		return domain.ErrProductAlreadyApproved
+	}
 	if err := p.productStorage.Approve(ctx, productID); err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			return domain.ErrProductNotFound
@@ -83,6 +96,29 @@ func (p ProductService) Approve(ctx context.Context, productID string) error {
 		return appErrors.WithContext("productStorage.Approve", err)
 	}
 	return nil
+}
+
+func (p ProductService) Disapprove(ctx context.Context, productID string) error {
+	product, err := p.productStorage.GetByID(ctx, productID)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return domain.ErrProductNotFound
+		}
+		return appErrors.WithContext("productStorage.GetByID", err)
+	}
+	logger.Get().Debug("approved status", zap.Bool("approved", product.IsApproved))
+	if !product.IsApproved {
+		return domain.ErrProductAlreadyDisapproved
+	}
+
+	if err := p.productStorage.Disapprove(ctx, productID); err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return domain.ErrProductNotFound
+		}
+		return appErrors.WithContext("productStorage.Disapprove", err)
+	}
+	return nil
+
 }
 
 func (p ProductService) ChangeImageURL(ctx context.Context, productID string, imageURL string) error {

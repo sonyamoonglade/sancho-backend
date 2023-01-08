@@ -7,10 +7,12 @@ import (
 )
 
 var (
-	ErrProductAlreadyExists = errors.New("product already exists")
-	ErrProductNotFound      = errors.New("product not found")
-	ErrCategoryNotFound     = errors.New("category not found")
-	ErrNoCategories         = errors.New("categories not found")
+	ErrProductAlreadyExists      = errors.New("product already exists")
+	ErrProductAlreadyApproved    = errors.New("product is already approved")
+	ErrProductAlreadyDisapproved = errors.New("product is already disapproved")
+	ErrProductNotFound           = errors.New("product not found")
+	ErrCategoryNotFound          = errors.New("category not found")
+	ErrNoCategories              = errors.New("categories not found")
 )
 
 type Product struct {

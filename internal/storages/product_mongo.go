@@ -7,6 +7,7 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -21,6 +22,22 @@ func NewProductStorage(products *mongo.Collection, categories *mongo.Collection)
 		products:   products,
 		categories: categories,
 	}
+}
+
+func (p ProductStorage) GetByID(ctx context.Context, productID string) (domain.Product, error) {
+	result := p.products.FindOne(ctx, bson.M{"_id": ToObjectID(productID)}, nil)
+	if err := result.Err(); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.Product{}, ErrNotFound
+		}
+
+		return domain.Product{}, err
+	}
+	var product domain.Product
+	if err := result.Decode(&product); err != nil {
+		return domain.Product{}, err
+	}
+	return product, nil
 }
 
 func (p ProductStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
@@ -79,15 +96,15 @@ func (p ProductStorage) GetCategoryByName(ctx context.Context, categoryName stri
 	return category, nil
 }
 
-func (p ProductStorage) Create(ctx context.Context, product domain.Product) error {
-	_, err := p.products.InsertOne(ctx, product)
+func (p ProductStorage) Create(ctx context.Context, product domain.Product) (primitive.ObjectID, error) {
+	r, err := p.products.InsertOne(ctx, product)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return ErrAlreadyExists
+			return primitive.ObjectID{}, ErrAlreadyExists
 		}
-		return err
+		return primitive.ObjectID{}, err
 	}
-	return nil
+	return r.InsertedID.(primitive.ObjectID), nil
 }
 
 func (p ProductStorage) Delete(ctx context.Context, productID string) error {
@@ -112,6 +129,25 @@ func (p ProductStorage) Approve(ctx context.Context, productID string) error {
 			bson.E{
 				Key:   "isApproved",
 				Value: true,
+			},
+		}},
+	}
+	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func (p ProductStorage) Disapprove(ctx context.Context, productID string) error {
+	query := bson.D{
+		bson.E{Key: "$set", Value: bson.D{
+			bson.E{
+				Key:   "isApproved",
+				Value: false,
 			},
 		}},
 	}

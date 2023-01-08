@@ -10,9 +10,9 @@ import (
 type Product interface {
 	GetAll(ctx context.Context) ([]domain.Product, error)
 	GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error)
-	Create(ctx context.Context, dto dto.CreateProductDTO) error
+	Create(ctx context.Context, dto dto.CreateProductDTO) (string, error)
 	Delete(ctx context.Context, productID string) error
 	Update(ctx context.Context, productID string, dto dto.UpdateProductDTO) error
 	Approve(ctx context.Context, productID string) error
-	ChangeImageURL(ctx context.Context, productID string, imageURL string) error
+	Disapprove(ctx context.Context, productID string) error
 }

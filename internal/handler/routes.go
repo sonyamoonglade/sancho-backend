@@ -21,7 +21,7 @@ func (h Handler) initProductAPI(api fiber.Router) {
 			adm.Delete("/:id/delete", h.DeleteProduct)
 			adm.Put("/:id/update", h.UpdateProduct)
 			adm.Put("/:id/approve", h.ApproveProduct)
-			adm.Put("/:id/changeImageUrl", h.ChangeImageURL)
+			adm.Put("/:id/disapprove", h.DisapproveProduct)
 		}
 	}
 
