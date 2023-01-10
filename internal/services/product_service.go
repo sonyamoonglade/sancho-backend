@@ -8,8 +8,6 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	"github.com/sonyamoonglade/sancho-backend/internal/storages"
-	"github.com/sonyamoonglade/sancho-backend/logger"
-	"go.uber.org/zap"
 )
 
 type ProductService struct {
@@ -85,8 +83,16 @@ func (p ProductService) Delete(ctx context.Context, productID string) error {
 }
 
 func (p ProductService) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
-	//TODO implement me
-	panic("implement me")
+	if err := p.productStorage.Update(ctx, dto); err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return domain.ErrProductNotFound
+		}
+		if updateError, ok := err.(appErrors.UpdateError); ok {
+			return updateError
+		}
+		return appErrors.WithContext("productStorage.Update", err)
+	}
+	return nil
 }
 
 func (p ProductService) Approve(ctx context.Context, productID string) error {
@@ -117,7 +123,6 @@ func (p ProductService) Disapprove(ctx context.Context, productID string) error 
 		}
 		return appErrors.WithContext("productStorage.GetByID", err)
 	}
-	logger.Get().Debug("approved status", zap.Bool("approved", product.IsApproved))
 	if !product.IsApproved {
 		return domain.ErrProductAlreadyDisapproved
 	}
@@ -130,14 +135,4 @@ func (p ProductService) Disapprove(ctx context.Context, productID string) error 
 	}
 	return nil
 
-}
-
-func (p ProductService) ChangeImageURL(ctx context.Context, productID string, imageURL string) error {
-	if err := p.productStorage.ChangeImageURL(ctx, productID, imageURL); err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		return appErrors.WithContext("productStorage.ChangeImageURL", err)
-	}
-	return nil
 }

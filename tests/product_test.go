@@ -279,7 +279,6 @@ func (s *APISuite) TestDisapproveProduct() {
 			Price:        int64(f.IntRange(100, 500)),
 			Features:     fixtures.GetNonLiquidFeatures(),
 		}
-		t.Logf("%v\n", inputBody)
 		productID, err := s.services.Product.Create(context.Background(), inputBody.ToDTO())
 		require.NoError(err)
 
@@ -318,14 +317,13 @@ func (s *APISuite) TestUpdateProduct() {
 		require = s.Require()
 	)
 
-	t.Run("should update passed fields because product exists", func(t *testing.T) {
+	t.Run("should update passed fields because product exists and doesn't become duplicate", func(t *testing.T) {
 		// 1. Insert the product
 		f.Seed(4)
 		inputBody := input.CreateProductInput{
-			Name:        f.Word(),
-			TranslateRU: f.Word(),
-			Description: f.LoremIpsumSentence(5),
-			// Initial product with category pizza
+			Name:         f.Word(),
+			TranslateRU:  f.Word(),
+			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
 			Features:     fixtures.GetNonLiquidFeatures(),
@@ -334,21 +332,21 @@ func (s *APISuite) TestUpdateProduct() {
 		require.NoError(err)
 
 		// 2. Testing request
-		url := fmt.Sprintf("/api/products/a/%s/update", productID)
 		updateBody := input.UpdateProductInput{
-			Name:         StringPtr(f.Word()),
-			TranslateRU:  StringPtr(f.Word()),
-			Description:  StringPtr(f.Word()),
-			ImageURL:     StringPtr(f.ImageURL(200, 599)),
-			CategoryName: StringPtr(categoryDrinks.Name),
-			Price:        IntPtr(int64(f.IntRange(500, 1000))),
+			Name:        StringPtr(f.LoremIpsumSentence(15)),
+			TranslateRU: StringPtr(f.LoremIpsumSentence(12)),
+			Description: StringPtr(f.LoremIpsumSentence(30)),
+			ImageURL:    StringPtr(f.ImageURL(200, 599)),
+			Price:       IntPtr(int64(f.IntRange(500, 1000))),
 		}
+		url := fmt.Sprintf("/api/products/a/%s/update", productID)
 		req, _ := http.NewRequest(http.MethodPut, buildURL(url), newBody(updateBody))
 		tokens, _ := s.tokenProvider.GenerateNewPair(auth.UserAuth{
 			Role:   domain.RoleAdmin,
 			UserID: uuid.NewString(),
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
 		require.NoError(err)
 		require.Equal(http.StatusOK, res.StatusCode)
@@ -359,30 +357,28 @@ func (s *APISuite) TestUpdateProduct() {
 
 		require.Equal(*updateBody.Price, product.Price)
 		require.Equal(*updateBody.Name, product.Name)
-		require.Equal(*updateBody.ImageURL, product.ImageURL)
+		require.Equal(*updateBody.ImageURL, *product.ImageURL)
 		require.Equal(*updateBody.TranslateRU, product.TranslateRU)
 		require.Equal(*updateBody.Description, product.Description)
-		// Should be changed to categoryDrinks during an update.
-		require.EqualValues(categoryDrinks, product.Category)
 	})
 
 	t.Run("should not update product because it doesn't exist", func(t *testing.T) {
 		var randomID = uuid.NewString()
-		url := fmt.Sprintf("/api/products/a/%s/update", randomID)
 		updateBody := input.UpdateProductInput{
-			Name:         StringPtr(f.Word()),
-			TranslateRU:  StringPtr(f.Word()),
-			Description:  StringPtr(f.Word()),
-			ImageURL:     StringPtr(f.ImageURL(200, 599)),
-			CategoryName: StringPtr(categoryDrinks.Name),
-			Price:        IntPtr(int64(f.IntRange(500, 1000))),
+			Name:        StringPtr(f.Word()),
+			TranslateRU: StringPtr(f.Word()),
+			Description: StringPtr(f.Word()),
+			ImageURL:    StringPtr(f.ImageURL(200, 599)),
+			Price:       IntPtr(int64(f.IntRange(500, 1000))),
 		}
+		url := fmt.Sprintf("/api/products/a/%s/update", randomID)
 		req, _ := http.NewRequest(http.MethodPut, buildURL(url), newBody(updateBody))
 		tokens, _ := s.tokenProvider.GenerateNewPair(auth.UserAuth{
 			Role:   domain.RoleAdmin,
 			UserID: uuid.NewString(),
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
 		require.NoError(err)
 		require.Equal(http.StatusNotFound, res.StatusCode)
@@ -392,8 +388,8 @@ func (s *APISuite) TestUpdateProduct() {
 		// 1. Insert Product1
 		f.Seed(5)
 		inputBody1 := input.CreateProductInput{
-			Name:        f.Word(),
-			TranslateRU: f.Word(),
+			Name:        f.LoremIpsumSentence(2),
+			TranslateRU: f.LoremIpsumSentence(5),
 			Description: f.LoremIpsumSentence(5),
 			// Initial product with category pizza
 			CategoryName: categoryPizza.Name,
@@ -406,8 +402,8 @@ func (s *APISuite) TestUpdateProduct() {
 		// 2. Insert Product2
 		f.Seed(6)
 		inputBody2 := input.CreateProductInput{
-			Name:         f.Word(),
-			TranslateRU:  f.Word(),
+			Name:         f.LoremIpsumSentence(2),
+			TranslateRU:  f.LoremIpsumSentence(9),
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
@@ -417,18 +413,19 @@ func (s *APISuite) TestUpdateProduct() {
 		require.NoError(err)
 
 		// 3. Testing request (Update Product2 and set name of Product1)
-		url := fmt.Sprintf("/api/products/a/%s/update", productID2)
 		updateBody := input.UpdateProductInput{
 			// Use the name of Product1
 			Name:  StringPtr(inputBody1.Name),
 			Price: IntPtr(int64(f.IntRange(100, 800))),
 		}
+		url := fmt.Sprintf("/api/products/a/%s/update", productID2)
 		req, _ := http.NewRequest(http.MethodPut, buildURL(url), newBody(updateBody))
 		tokens, _ := s.tokenProvider.GenerateNewPair(auth.UserAuth{
 			Role:   domain.RoleAdmin,
 			UserID: uuid.NewString(),
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
 		require.NoError(err)
 		require.Equal(http.StatusConflict, res.StatusCode)
@@ -437,8 +434,8 @@ func (s *APISuite) TestUpdateProduct() {
 		product, err := s.services.Product.GetByID(context.Background(), productID2)
 		require.NoError(err)
 
-		// Should not be updated, stays the initial
-		require.Equal(product.Name, inputBody1.Name)
-		require.Equal(product.Price, inputBody1.Price)
+		// Should not be updated, stays the initial values of product2
+		require.Equal(product.Name, inputBody2.Name)
+		require.Equal(product.Price, inputBody2.Price)
 	})
 }

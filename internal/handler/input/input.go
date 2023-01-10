@@ -26,20 +26,20 @@ func (c CreateProductInput) ToDTO() dto.CreateProductDTO {
 }
 
 type UpdateProductInput struct {
-	Name         *string `json:"name"`
-	TranslateRU  *string `json:"translateRu"`
-	Description  *string `json:"description"`
-	ImageURL     *string `json:"imageUrl"`
-	CategoryName *string `json:"categoryName"`
-	Price        *int64  `json:"price"`
+	Name        *string `json:"name"`
+	TranslateRU *string `json:"translateRu"`
+	Description *string `json:"description"`
+	ImageURL    *string `json:"imageUrl"`
+	Price       *int64  `json:"price"`
 }
 
-func (u UpdateProductInput) ToDTO() dto.UpdateProductDTO {
+func (u UpdateProductInput) ToDTO(productID string) dto.UpdateProductDTO {
 	return dto.UpdateProductDTO{
-		Name:         u.Name,
-		TranslateRU:  u.TranslateRU,
-		Description:  u.Description,
-		CategoryName: u.CategoryName,
-		Price:        u.Price,
+		ProductID:   productID,
+		Name:        u.Name,
+		TranslateRU: u.TranslateRU,
+		Description: u.Description,
+		ImageURL:    u.ImageURL,
+		Price:       u.Price,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/sonyamoonglade/sancho-backend/internal/appErrors"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	"go.mongodb.org/mongo-driver/bson"
@@ -57,45 +58,6 @@ func (p ProductStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
 	return products, nil
 }
 
-func (p ProductStorage) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
-	var opts *options.FindOptions
-	if sorted {
-		opts = options.Find()
-		// categories should be sorted with descending order
-		opts.SetSort(bson.M{"rank": -1})
-	}
-
-	cur, err := p.categories.Find(ctx, bson.M{}, opts)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-
-	var categories []domain.Category
-	if err := cur.All(ctx, &categories); err != nil {
-		return nil, err
-	}
-
-	return categories, nil
-}
-
-func (p ProductStorage) GetCategoryByName(ctx context.Context, categoryName string) (domain.Category, error) {
-	res := p.categories.FindOne(ctx, bson.M{"name": categoryName}, nil)
-	if err := res.Err(); err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return domain.Category{}, ErrNotFound
-		}
-		return domain.Category{}, err
-	}
-	var category domain.Category
-	if err := res.Decode(&category); err != nil {
-		return domain.Category{}, err
-	}
-	return category, nil
-}
-
 func (p ProductStorage) Create(ctx context.Context, product domain.Product) (primitive.ObjectID, error) {
 	r, err := p.products.InsertOne(ctx, product)
 	if err != nil {
@@ -118,9 +80,41 @@ func (p ProductStorage) Delete(ctx context.Context, productID string) error {
 	return nil
 }
 
-func (p ProductStorage) Update(ctx context.Context, productID string, dto dto.UpdateProductDTO) error {
-	//TODO implement m:e
-	panic("implement me")
+func (p ProductStorage) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
+	updateQuery := bson.M{}
+	if dto.Price != nil {
+		updateQuery["price"] = *dto.Price
+	}
+	if dto.Name != nil {
+		updateQuery["name"] = *dto.Name
+	}
+	if dto.Description != nil {
+		updateQuery["description"] = *dto.Description
+	}
+	if dto.TranslateRU != nil {
+		updateQuery["translateRu"] = *dto.TranslateRU
+	}
+	if dto.ImageURL != nil {
+		updateQuery["imageUrl"] = *dto.ImageURL
+	}
+	setQuery := bson.D{
+		bson.E{
+			Key:   "$set",
+			Value: updateQuery,
+		},
+	}
+	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(dto.ProductID)}, setQuery, nil)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			field, value := GetFieldAndValueFromDuplicateError(err)
+			return appErrors.NewUpdateError("product", field, value)
+		}
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 func (p ProductStorage) Approve(ctx context.Context, productID string) error {
@@ -161,21 +155,41 @@ func (p ProductStorage) Disapprove(ctx context.Context, productID string) error 
 	return nil
 }
 
-func (p ProductStorage) ChangeImageURL(ctx context.Context, productID string, imageURL string) error {
-	query := bson.D{
-		bson.E{Key: "$set", Value: bson.D{
-			bson.E{
-				Key:   "imageURL",
-				Value: imageURL,
-			},
-		}},
+func (p ProductStorage) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
+	var opts *options.FindOptions
+	if sorted {
+		opts = options.Find()
+		// categories should be sorted with descending order
+		opts.SetSort(bson.M{"rank": -1})
 	}
-	result, err := p.products.UpdateOne(ctx, bson.M{"_id": ToObjectID(productID)}, query)
+
+	cur, err := p.categories.Find(ctx, bson.M{}, opts)
 	if err != nil {
-		return err
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrNotFound
+		}
+		return nil, err
 	}
-	if result.MatchedCount == 0 {
-		return ErrNotFound
+
+	var categories []domain.Category
+	if err := cur.All(ctx, &categories); err != nil {
+		return nil, err
 	}
-	return nil
+
+	return categories, nil
+}
+
+func (p ProductStorage) GetCategoryByName(ctx context.Context, categoryName string) (domain.Category, error) {
+	res := p.categories.FindOne(ctx, bson.M{"name": categoryName}, nil)
+	if err := res.Err(); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.Category{}, ErrNotFound
+		}
+		return domain.Category{}, err
+	}
+	var category domain.Category
+	if err := res.Decode(&category); err != nil {
+		return domain.Category{}, err
+	}
+	return category, nil
 }

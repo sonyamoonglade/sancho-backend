@@ -18,9 +18,9 @@ var (
 type Product struct {
 	ProductID   primitive.ObjectID `bson:"_id,omitempty" json:"productId,omitempty"`
 	Name        string             `bson:"name" json:"name"`
-	TranslateRU string             `bson:"translateRU" json:"translateRu"`
+	TranslateRU string             `bson:"translateRu" json:"translateRu"`
 	Description string             `bson:"description" json:"description"`
-	ImageURL    string             `bson:"imageURL" json:"imageURL"`
+	ImageURL    *string            `bson:"imageUrl" json:"imageUrl"`
 	IsApproved  bool               `bson:"isApproved" json:"isApproved"`
 	Price       int64              `bson:"price" json:"price"`
 	Category    Category           `bson:"category" json:"category"`

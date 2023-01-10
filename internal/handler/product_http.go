@@ -64,8 +64,18 @@ func (h Handler) DeleteProduct(c *fiber.Ctx) error {
 }
 
 func (h Handler) UpdateProduct(c *fiber.Ctx) error {
-
-	return nil
+	productID := c.Params("id", "")
+	if productID == "" {
+		return c.Status(http.StatusBadRequest).SendString("empty id")
+	}
+	var inp input.UpdateProductInput
+	if err := c.BodyParser(&inp); err != nil {
+		return err
+	}
+	if err := h.services.Product.Update(c.Context(), inp.ToDTO(productID)); err != nil {
+		return err
+	}
+	return c.SendStatus(http.StatusOK)
 }
 
 func (h Handler) ApproveProduct(c *fiber.Ctx) error {

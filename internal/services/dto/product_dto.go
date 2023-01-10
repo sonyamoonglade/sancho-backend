@@ -16,7 +16,7 @@ func (d CreateProductDTO) ToDomain() domain.Product {
 		Name:        d.Name,
 		TranslateRU: d.TranslateRU,
 		Description: d.Description,
-		ImageURL:    "",
+		ImageURL:    nil,
 		Price:       d.Price,
 		IsApproved:  false,
 		Features: domain.Features{
@@ -29,10 +29,10 @@ func (d CreateProductDTO) ToDomain() domain.Product {
 }
 
 type UpdateProductDTO struct {
-	ProductID    string
-	Name         *string
-	TranslateRU  *string
-	Description  *string
-	CategoryName *string
-	Price        *int64
+	ProductID   string
+	Name        *string
+	TranslateRU *string
+	ImageURL    *string
+	Description *string
+	Price       *int64
 }

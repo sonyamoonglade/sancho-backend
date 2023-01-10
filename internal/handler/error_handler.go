@@ -21,11 +21,22 @@ func HandleError(c *fiber.Ctx, err error) error {
 		)
 		return c.Status(http.StatusInternalServerError).SendString("internal error")
 	}
+
+	if updateError, ok := err.(appErrors.UpdateError); ok {
+		logger.Get().Debug("update error",
+			zap.String("X-Request-Id", c.GetRespHeaders()["X-Request-Id"]),
+			zap.Error(err),
+		)
+		return c.Status(updateError.Code()).JSON(fiber.Map{
+			"message": updateError.Error(),
+		})
+	}
+
+	// Domain errors
 	logger.Get().Debug("domain error",
 		zap.String("X-Request-Id", c.GetRespHeaders()["X-Request-Id"]),
 		zap.Error(err),
 	)
-	// Domain errors
 	msg, code := domainErrorToHTTP(err)
 	return c.Status(code).JSON(fiber.Map{
 		"message": msg,
@@ -48,6 +59,6 @@ func domainErrorToHTTP(err error) (string, int) {
 		return err.Error(), http.StatusConflict
 
 	default:
-		return "internal error", http.StatusInternalServerError
+		return err.Error(), http.StatusInternalServerError
 	}
 }
