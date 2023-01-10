@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/auth"
@@ -17,8 +18,12 @@ const (
 	ResponseAccessDenied = "access denied"
 )
 
-// JWTAuthMiddleware validates incoming Bearer access token.
-// It also does RBAC, checking incoming user role for required
+type RefreshTokenStore interface {
+	Save(token string, ttl time.Duration) error
+}
+
+// JWTAuthMiddleware validates incoming Bearer access token,
+// does RBAC, checking incoming user role against required
 // and enriches request's context with userID of the token owner.
 type JWTAuthMiddleware struct {
 	tokenProvider auth.TokenProvider
@@ -64,4 +69,12 @@ func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
 
 		return c.Next()
 	}
+}
+
+func (m JWTAuthMiddleware) rotateTokens(userID string, refreshToken string) {
+	m.tokenProvider.GenerateNewPair(auth.UserAuth{
+		Role:   domain.Role{},
+		UserID: "",
+	},
+	)
 }

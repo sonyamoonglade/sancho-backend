@@ -22,9 +22,8 @@ func (h Handler) InitAPI(router fiber.Router) {
 	m := h.middlewares
 	api := router.Group("/api")
 	api.Use(m.XRequestID.Use())
-	{
-		h.initProductAPI(api)
-	}
+	h.initProductAPI(api)
+	h.initAdminsAPI(api)
 }
 
 // TODO: move

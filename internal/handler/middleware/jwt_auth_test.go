@@ -116,6 +116,8 @@ func TestJWTAuthMiddleware(t *testing.T) {
 		body := readBody(res.Body)
 		require.Equal(t, ResponseAccessDenied, string(body))
 	})
+
+	//t.Run("should return 401 because ")
 }
 
 func getRequest(token string) *http.Request {

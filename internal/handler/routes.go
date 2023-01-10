@@ -6,23 +6,25 @@ import (
 )
 
 func (h Handler) initProductAPI(api fiber.Router) {
-	m := h.middlewares
-
 	p := api.Group("/products")
 	{
 		p.Get("/catalog", h.GetCatalog)
 		p.Get("/categories", h.GetCategories)
-
-		adm := p.Group("/a")
-		{
-			adm.Use(m.JWTAuth.Use(domain.RoleAdmin))
-
-			adm.Post("/create", h.CreateProduct)
-			adm.Delete("/:id/delete", h.DeleteProduct)
-			adm.Put("/:id/update", h.UpdateProduct)
-			adm.Put("/:id/approve", h.ApproveProduct)
-			adm.Put("/:id/disapprove", h.DisapproveProduct)
-		}
 	}
+}
 
+func (h Handler) initAdminsAPI(api fiber.Router) {
+	m := h.middlewares
+
+	admins := api.Group("/admins")
+	admins.Use(m.JWTAuth.Use(domain.RoleAdmin))
+
+	products := admins.Group("/products")
+	{
+		products.Post("/create", h.CreateProduct)
+		products.Put("/:id/update", h.UpdateProduct)
+		products.Delete("/:id/delete", h.DeleteProduct)
+		products.Put("/:id/approve", h.ApproveProduct)
+		products.Put("/:id/disapprove", h.DisapproveProduct)
+	}
 }
