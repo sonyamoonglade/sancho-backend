@@ -17,3 +17,9 @@ type Product interface {
 	Approve(ctx context.Context, productID string) error
 	Disapprove(ctx context.Context, productID string) error
 }
+
+type Auth interface {
+	GetAdminByRefreshToken(ctx context.Context, token string) (domain.Admin, error)
+	//GetCustomerByRefreshToken(token string)
+	//GetWorkerByRefreshToken(token string)
+}

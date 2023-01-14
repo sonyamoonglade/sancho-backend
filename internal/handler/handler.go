@@ -25,8 +25,3 @@ func (h Handler) InitAPI(router fiber.Router) {
 	h.initProductAPI(api)
 	h.initAdminsAPI(api)
 }
-
-// TODO: move
-func (h Handler) errorHandler(c *fiber.Ctx, err error) error {
-	return nil
-}

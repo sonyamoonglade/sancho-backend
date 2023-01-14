@@ -6,11 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type User struct {
-	UserID string `bson:"_id,omitempty" json:"userId"`
-	Role   Role   `bson:"role" json:"role"`
-}
-
 var (
 	RoleUnknown  = Role{"unknown"}
 	RoleCustomer = Role{"customer"}

@@ -10,15 +10,15 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/storages"
 )
 
-type ProductService struct {
+type productService struct {
 	productStorage storage.Product
 }
 
 func NewProductService(productStorage storage.Product) Product {
-	return &ProductService{productStorage: productStorage}
+	return &productService{productStorage: productStorage}
 }
 
-func (p ProductService) GetByID(ctx context.Context, productID string) (domain.Product, error) {
+func (p productService) GetByID(ctx context.Context, productID string) (domain.Product, error) {
 	product, err := p.productStorage.GetByID(ctx, productID)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
@@ -29,7 +29,7 @@ func (p ProductService) GetByID(ctx context.Context, productID string) (domain.P
 	return product, nil
 }
 
-func (p ProductService) GetAll(ctx context.Context) ([]domain.Product, error) {
+func (p productService) GetAll(ctx context.Context) ([]domain.Product, error) {
 	catalog, err := p.productStorage.GetAll(ctx)
 	if err != nil {
 		return nil, appErrors.WithContext("productStorage.GetAll", err)
@@ -37,7 +37,7 @@ func (p ProductService) GetAll(ctx context.Context) ([]domain.Product, error) {
 	return catalog, nil
 }
 
-func (p ProductService) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
+func (p productService) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
 	categories, err := p.productStorage.GetAllCategories(ctx, sorted)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
@@ -48,7 +48,7 @@ func (p ProductService) GetAllCategories(ctx context.Context, sorted bool) ([]do
 	return categories, nil
 }
 
-func (p ProductService) Create(ctx context.Context, dto dto.CreateProductDTO) (string, error) {
+func (p productService) Create(ctx context.Context, dto dto.CreateProductDTO) (string, error) {
 	category, err := p.productStorage.GetCategoryByName(ctx, dto.CategoryName)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
@@ -72,7 +72,7 @@ func (p ProductService) Create(ctx context.Context, dto dto.CreateProductDTO) (s
 	return productID.Hex(), nil
 }
 
-func (p ProductService) Delete(ctx context.Context, productID string) error {
+func (p productService) Delete(ctx context.Context, productID string) error {
 	if err := p.productStorage.Delete(ctx, productID); err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			return domain.ErrProductNotFound
@@ -82,7 +82,7 @@ func (p ProductService) Delete(ctx context.Context, productID string) error {
 	return nil
 }
 
-func (p ProductService) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
+func (p productService) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
 	if err := p.productStorage.Update(ctx, dto); err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			return domain.ErrProductNotFound
@@ -95,7 +95,7 @@ func (p ProductService) Update(ctx context.Context, dto dto.UpdateProductDTO) er
 	return nil
 }
 
-func (p ProductService) Approve(ctx context.Context, productID string) error {
+func (p productService) Approve(ctx context.Context, productID string) error {
 	product, err := p.productStorage.GetByID(ctx, productID)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
@@ -115,7 +115,7 @@ func (p ProductService) Approve(ctx context.Context, productID string) error {
 	return nil
 }
 
-func (p ProductService) Disapprove(ctx context.Context, productID string) error {
+func (p productService) Disapprove(ctx context.Context, productID string) error {
 	product, err := p.productStorage.GetByID(ctx, productID)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {

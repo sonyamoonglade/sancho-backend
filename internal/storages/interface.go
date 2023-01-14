@@ -19,3 +19,7 @@ type Product interface {
 	GetCategoryByName(ctx context.Context, categoryName string) (domain.Category, error)
 	GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error)
 }
+
+type User interface {
+	GetAdminByRefreshToken(ctx context.Context, token string) (domain.Admin, error)
+}

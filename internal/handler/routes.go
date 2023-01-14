@@ -17,14 +17,16 @@ func (h Handler) initAdminsAPI(api fiber.Router) {
 	m := h.middlewares
 
 	admins := api.Group("/admins")
+	admins.Get("/auth/refresh", h.AdminRefresh)
+
 	admins.Use(m.JWTAuth.Use(domain.RoleAdmin))
 
 	products := admins.Group("/products")
 	{
-		products.Post("/create", h.CreateProduct)
-		products.Put("/:id/update", h.UpdateProduct)
-		products.Delete("/:id/delete", h.DeleteProduct)
-		products.Put("/:id/approve", h.ApproveProduct)
-		products.Put("/:id/disapprove", h.DisapproveProduct)
+		products.Post("/create", h.AdminCreateProduct)
+		products.Put("/:id/update", h.AdminUpdateProduct)
+		products.Delete("/:id/delete", h.AdminDeleteProduct)
+		products.Put("/:id/approve", h.AdminApproveProduct)
+		products.Put("/:id/disapprove", h.AdminDisapproveProduct)
 	}
 }

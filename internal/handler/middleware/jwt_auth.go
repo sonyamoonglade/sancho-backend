@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/auth"
@@ -17,10 +16,6 @@ const (
 	ResponseUnauthorized = "unauthorized"
 	ResponseAccessDenied = "access denied"
 )
-
-type RefreshTokenStore interface {
-	Save(token string, ttl time.Duration) error
-}
 
 // JWTAuthMiddleware validates incoming Bearer access token,
 // does RBAC, checking incoming user role against required
@@ -62,19 +57,12 @@ func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
 			return err
 		}
 
-		// Role's insufficient
+		// Check if role's insufficient.
 		if !userAuth.Role.CheckPermissions(requiredRole) {
 			return c.Status(http.StatusForbidden).SendString(ResponseAccessDenied)
 		}
 
+		c.Locals(userAuth, userAuth.UserID)
 		return c.Next()
 	}
-}
-
-func (m JWTAuthMiddleware) rotateTokens(userID string, refreshToken string) {
-	m.tokenProvider.GenerateNewPair(auth.UserAuth{
-		Role:   domain.Role{},
-		UserID: "",
-	},
-	)
 }

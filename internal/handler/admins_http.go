@@ -5,10 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/internal/handler/input"
+	"github.com/sonyamoonglade/sancho-backend/internal/handler/middleware"
 	"github.com/sonyamoonglade/sancho-backend/internal/validation"
 )
 
-func (h Handler) CreateProduct(c *fiber.Ctx) error {
+func (h Handler) AdminCreateProduct(c *fiber.Ctx) error {
 	var inp input.CreateProductInput
 	if err := c.BodyParser(&inp); err != nil {
 		return err
@@ -28,7 +29,7 @@ func (h Handler) CreateProduct(c *fiber.Ctx) error {
 	})
 }
 
-func (h Handler) DeleteProduct(c *fiber.Ctx) error {
+func (h Handler) AdminDeleteProduct(c *fiber.Ctx) error {
 	productID := c.Params("id", "")
 	if productID == "" {
 		return c.Status(http.StatusBadRequest).SendString("empty id")
@@ -39,7 +40,7 @@ func (h Handler) DeleteProduct(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
-func (h Handler) UpdateProduct(c *fiber.Ctx) error {
+func (h Handler) AdminUpdateProduct(c *fiber.Ctx) error {
 	productID := c.Params("id", "")
 	if productID == "" {
 		return c.Status(http.StatusBadRequest).SendString("empty id")
@@ -54,7 +55,7 @@ func (h Handler) UpdateProduct(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
-func (h Handler) ApproveProduct(c *fiber.Ctx) error {
+func (h Handler) AdminApproveProduct(c *fiber.Ctx) error {
 	productID := c.Params("id", "")
 	if productID == "" {
 		return c.Status(http.StatusBadRequest).SendString("empty id")
@@ -65,7 +66,7 @@ func (h Handler) ApproveProduct(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
-func (h Handler) DisapproveProduct(c *fiber.Ctx) error {
+func (h Handler) AdminDisapproveProduct(c *fiber.Ctx) error {
 	productID := c.Params("id", "")
 	if productID == "" {
 		return c.Status(http.StatusBadRequest).SendString("empty id")
@@ -74,4 +75,13 @@ func (h Handler) DisapproveProduct(c *fiber.Ctx) error {
 		return err
 	}
 	return c.SendStatus(http.StatusOK)
+}
+
+func (h Handler) AdminRefresh(c *fiber.Ctx) error {
+	adminID, err := middleware.GetUserIDFromCtx(c)
+	if err != nil {
+		return err
+	}
+	_ = adminID
+	return nil
 }
