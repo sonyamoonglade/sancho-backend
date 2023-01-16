@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	auth "github.com/sonyamoonglade/sancho-backend/auth"
 	domain "github.com/sonyamoonglade/sancho-backend/internal/domain"
 	dto "github.com/sonyamoonglade/sancho-backend/internal/services/dto"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 )
 
 // MockProduct is a mock of Product interface.

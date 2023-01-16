@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/sonyamoonglade/sancho-backend/auth"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 )
 
 const (

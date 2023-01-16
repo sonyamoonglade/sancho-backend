@@ -7,7 +7,7 @@ import (
 	"github.com/cristalhq/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
-	"github.com/sonyamoonglade/sancho-backend/logger"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"go.uber.org/zap"
 )
 

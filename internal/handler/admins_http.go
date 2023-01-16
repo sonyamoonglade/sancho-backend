@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/internal/handler/input"
-	"github.com/sonyamoonglade/sancho-backend/internal/handler/middleware"
 	"github.com/sonyamoonglade/sancho-backend/internal/validation"
 )
 
@@ -75,25 +74,4 @@ func (h Handler) AdminDisapproveProduct(c *fiber.Ctx) error {
 		return err
 	}
 	return c.SendStatus(http.StatusOK)
-}
-
-func (h Handler) AdminRefresh(c *fiber.Ctx) error {
-	adminID, err := middleware.GetUserIDFromCtx(c)
-	if err != nil {
-		return err
-	}
-
-	token := c.Cookies("refresh-token", "")
-	if token == "" {
-		return c.SendStatus(http.StatusUnauthorized)
-	}
-
-	newTokensPair, err := h.services.Auth.RefreshAdminToken(c.Context(), adminID, token)
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(fiber.Map{
-		"accessToken": newTokensPair.AccessToken,
-	})
 }

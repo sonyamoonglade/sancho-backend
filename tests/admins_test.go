@@ -8,9 +8,9 @@ import (
 
 	f "github.com/brianvoe/gofakeit/v6"
 	"github.com/google/uuid"
-	"github.com/sonyamoonglade/sancho-backend/auth"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/handler/input"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 	"github.com/sonyamoonglade/sancho-backend/tests/fixtures"
 )
 
@@ -193,7 +193,6 @@ func (s *APISuite) TestDisapproveProduct() {
 			Price:        int64(f.IntRange(100, 500)),
 			Features:     fixtures.GetNonLiquidFeatures(),
 		}
-		t.Logf("%v\n", inputBody)
 		productID, err := s.services.Product.Create(context.Background(), inputBody.ToDTO())
 		require.NoError(err)
 

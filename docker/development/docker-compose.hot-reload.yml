@@ -8,7 +8,7 @@ services:
       - "27017:27017"
     volumes:
       - ./data:/data/db
-      - ${APP_SRC}/configs/dev.yml:/etc/backend/config.yml
+      - ${APP_SRC}/config.yml:/etc/backend/config.yml
     networks:
       - inet
     environment:

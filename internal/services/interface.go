@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/sonyamoonglade/sancho-backend/auth"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 )
 
 type Product interface {

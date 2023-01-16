@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/sonyamoonglade/sancho-backend/database"
 	"github.com/sonyamoonglade/sancho-backend/internal/config"
 	"github.com/sonyamoonglade/sancho-backend/internal/handler"
-	"github.com/sonyamoonglade/sancho-backend/logger"
+	"github.com/sonyamoonglade/sancho-backend/pkg/database"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"go.uber.org/zap"
 )
 

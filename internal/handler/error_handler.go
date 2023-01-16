@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/internal/appErrors"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
-	"github.com/sonyamoonglade/sancho-backend/logger"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"go.uber.org/zap"
 )
 
@@ -48,14 +48,17 @@ func domainErrorToHTTP(err error) (string, int) {
 	switch true {
 	case is(err, domain.ErrCategoryNotFound),
 		is(err, domain.ErrNoCategories),
-		is(err, domain.ErrProductNotFound):
+		is(err, domain.ErrProductNotFound),
+		is(err, domain.ErrAdminNotFound),
+		is(err, domain.ErrUserNotFound):
 		return err.Error(), http.StatusNotFound
 
 	case is(err, domain.ErrProductAlreadyApproved),
 		is(err, domain.ErrProductAlreadyDisapproved):
 		return err.Error(), http.StatusBadRequest
 
-	case is(err, domain.ErrProductAlreadyExists):
+	case is(err, domain.ErrProductAlreadyExists),
+		is(err, domain.ErrAdminAlreadyExists):
 		return err.Error(), http.StatusConflict
 
 	default:

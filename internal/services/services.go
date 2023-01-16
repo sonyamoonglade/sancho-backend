@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/sonyamoonglade/sancho-backend/auth"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 )
 
 type Services struct {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/sonyamoonglade/sancho-backend/database"
+	"github.com/sonyamoonglade/sancho-backend/pkg/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

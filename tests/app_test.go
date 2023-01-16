@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/sonyamoonglade/sancho-backend/auth"
-	"github.com/sonyamoonglade/sancho-backend/database"
 	handler "github.com/sonyamoonglade/sancho-backend/internal/handler"
 	"github.com/sonyamoonglade/sancho-backend/internal/handler/middleware"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
-	"github.com/sonyamoonglade/sancho-backend/logger"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
+	"github.com/sonyamoonglade/sancho-backend/pkg/database"
 	"github.com/sonyamoonglade/sancho-backend/pkg/hash"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"github.com/stretchr/testify/suite"
 )
 

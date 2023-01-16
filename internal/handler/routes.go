@@ -17,8 +17,6 @@ func (h Handler) initAdminsAPI(api fiber.Router) {
 	m := h.middlewares
 
 	admins := api.Group("/admins")
-	admins.Get("/auth/refresh", h.AdminRefresh)
-
 	admins.Use(m.JWTAuth.Use(domain.RoleAdmin))
 
 	products := admins.Group("/products")

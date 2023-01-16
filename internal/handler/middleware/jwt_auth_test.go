@@ -10,9 +10,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/sonyamoonglade/sancho-backend/auth"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	mock_service "github.com/sonyamoonglade/sancho-backend/internal/services/mocks"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 	"github.com/stretchr/testify/require"
 )
 
