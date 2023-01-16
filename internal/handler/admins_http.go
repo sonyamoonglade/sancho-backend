@@ -82,6 +82,18 @@ func (h Handler) AdminRefresh(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	_ = adminID
-	return nil
+
+	token := c.Cookies("refresh-token", "")
+	if token == "" {
+		return c.SendStatus(http.StatusUnauthorized)
+	}
+
+	newTokensPair, err := h.services.Auth.RefreshAdminToken(c.Context(), adminID, token)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(fiber.Map{
+		"accessToken": newTokensPair.AccessToken,
+	})
 }

@@ -8,12 +8,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sonyamoonglade/sancho-backend/auth"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
+	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 )
 
 const (
 	HeaderAuthorization = "Authorization"
 
 	ResponseUnauthorized = "unauthorized"
+	ResponseTokenExpired = "token has expired"
 	ResponseAccessDenied = "access denied"
 )
 
@@ -22,10 +24,14 @@ const (
 // and enriches request's context with userID of the token owner.
 type JWTAuthMiddleware struct {
 	tokenProvider auth.TokenProvider
+	authService   service.Auth
 }
 
-func NewJWTAuthMiddleware(tokenProvider auth.TokenProvider) *JWTAuthMiddleware {
-	return &JWTAuthMiddleware{tokenProvider: tokenProvider}
+func NewJWTAuthMiddleware(authService service.Auth, tokenProvider auth.TokenProvider) *JWTAuthMiddleware {
+	return &JWTAuthMiddleware{
+		authService:   authService,
+		tokenProvider: tokenProvider,
+	}
 }
 
 func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
@@ -48,8 +54,10 @@ func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
 		// Token isn't valid
 		if err != nil {
 			switch true {
-			case errors.Is(err, auth.ErrTokenExpired),
-				errors.Is(err, auth.ErrInvalidToken),
+			// If token has expired userAuth is not nil. See jwt.go:122
+			case errors.Is(err, auth.ErrTokenExpired):
+				return m.refreshTokens(c, userAuth)
+			case errors.Is(err, auth.ErrInvalidToken),
 				errors.Is(err, auth.ErrInvalidIssuer):
 				return c.Status(http.StatusUnauthorized).SendString(ResponseUnauthorized)
 			}
@@ -65,4 +73,48 @@ func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
 		c.Locals(userAuth, userAuth.UserID)
 		return c.Next()
 	}
+}
+
+func (m JWTAuthMiddleware) refreshTokens(c *fiber.Ctx, userAuth auth.UserAuth) error {
+	// Refresh tokens here
+	refreshToken := c.Cookies("refresh-token", "")
+	if refreshToken == "" {
+		return c.Status(http.StatusUnauthorized).SendString(ResponseTokenExpired)
+	}
+
+	switch userAuth.Role {
+	case domain.RoleCustomer:
+		//TODO
+		return nil
+	case domain.RoleWorker:
+		// TODO
+		return nil
+	case domain.RoleAdmin:
+		newTokens, err := m.authService.RefreshAdminToken(c.Context(), userAuth.UserID, refreshToken)
+		if err != nil {
+			return err
+		}
+		m.setRefreshTokenCookie(c, newTokens.RefreshToken)
+		return m.returnAccessToken(c, newTokens.AccessToken)
+	default:
+		return c.SendStatus(http.StatusInternalServerError)
+	}
+}
+
+func (m JWTAuthMiddleware) setRefreshTokenCookie(c *fiber.Ctx, refreshToken string) {
+	c.Cookie(&fiber.Cookie{
+		Name:  "refresh-token",
+		Value: refreshToken,
+		// 30 Days
+		MaxAge:   60 * 60 * 24 * 30,
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "lax",
+	})
+}
+
+func (m JWTAuthMiddleware) returnAccessToken(c *fiber.Ctx, accessToken string) error {
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"accessToken": accessToken,
+	})
 }

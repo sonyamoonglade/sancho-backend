@@ -1,21 +1,50 @@
-[{
-  "createIndexes": "category",
-  "indexes": [{
-    "key": {
-      "name": 1
-    },
-    "name": "name_unique",
-    "unique": true
-  }]
-},
+[
+  {
+    "createIndexes": "category",
+    "indexes": [
+      {
+        "key": {
+          "name": 1
+        },
+        "name": "name_unique",
+        "unique": true
+      }
+    ]
+  },
   {
     "createIndexes": "product",
-    "indexes": [{
-      "key": {
-        "name": 1
-      },
-      "name": "name_unique",
-      "unique": true
-    }]
+    "indexes": [
+      {
+        "key": {
+          "name": 1
+        },
+        "name": "name_unique",
+        "unique": true
+      }
+    ]
+  },
+  {
+    "createIndexes": "adminsAndWorkers",
+    "indexes": [
+      {
+        "key": {
+          "login": 1
+        },
+        "name": "login_unique",
+        "unique": true
+      }
+    ]
+  },
+  {
+    "createIndexes": "customers",
+    "indexes": [
+      {
+        "key": {
+          "phoneNumber": 1
+        },
+        "name": "phone_number_unique",
+        "unique": true
+      }
+    ]
   }
 ]

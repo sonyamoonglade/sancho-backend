@@ -119,7 +119,7 @@ func (p provider) ParseAndValidate(token string) (UserAuth, error) {
 		return UserAuth{}, err
 	}
 	if tokenPayload.ExpiresAt.Before(now) {
-		return UserAuth{}, ErrTokenExpired
+		return tokenPayload.UserAuth, ErrTokenExpired
 	}
 	if tokenPayload.Issuer != p.issuer {
 		return UserAuth{}, ErrInvalidIssuer

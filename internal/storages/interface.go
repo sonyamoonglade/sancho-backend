@@ -11,7 +11,7 @@ import (
 type Product interface {
 	GetByID(ctx context.Context, productID string) (domain.Product, error)
 	GetAll(ctx context.Context) ([]domain.Product, error)
-	Create(ctx context.Context, product domain.Product) (primitive.ObjectID, error)
+	Save(ctx context.Context, product domain.Product) (primitive.ObjectID, error)
 	Update(ctx context.Context, dto dto.UpdateProductDTO) error
 	Delete(ctx context.Context, productID string) error
 	Approve(ctx context.Context, productID string) error
@@ -21,5 +21,12 @@ type Product interface {
 }
 
 type User interface {
-	GetAdminByRefreshToken(ctx context.Context, token string) (domain.Admin, error)
+	GetAdminByLogin(ctx context.Context, login string) (domain.Admin, error)
+	GetAdminByRefreshToken(ctx context.Context, adminID, token string) (domain.Admin, error)
+
+	SaveAdmin(ctx context.Context, admin domain.Admin) (string, error)
+	SaveCustomer(ctx context.Context, customer domain.Customer) error
+	SaveWorker(ctx context.Context, worker domain.Worker) error
+
+	SaveSession(ctx context.Context, dto dto.SaveSessionDTO) error
 }

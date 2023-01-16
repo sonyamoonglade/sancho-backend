@@ -4,6 +4,7 @@ type Customer struct {
 	UserID          string           `json:"userId" bson:"userId,omitempty"`
 	PhoneNumber     string           `json:"phoneNumber" bson:"phoneNumber"`
 	DeliveryAddress *DeliveryAddress `json:"deliveryAddress,omitempty" bson:"deliveryAddress,omitempty"`
+	Role            Role             `json:"role" bson:"role"`
 	Name            string           `json:"name" bson:"name"`
 	Session         Session          `json:"session,omitempty" bson:"session,omitempty"`
 }

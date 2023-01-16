@@ -1,8 +1,11 @@
 package tests
 
 import (
+	"time"
+
 	f "github.com/brianvoe/gofakeit/v6"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
+	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -58,6 +61,20 @@ var (
 				EnergyValue: 50,
 				Nutrients:   nil,
 			},
+		},
+	}
+
+	ttlStrategy = service.TTLStrategy{
+		AccessTokenTTLs: map[domain.Role]time.Duration{
+			domain.RoleAdmin:    time.Second * 60,
+			domain.RoleWorker:   time.Second * 60,
+			domain.RoleCustomer: time.Second * 3600,
+		},
+		RefreshTokenTTL: map[domain.Role]time.Duration{
+			domain.RoleAdmin:  time.Hour * 1,
+			domain.RoleWorker: time.Hour * 18,
+			// ~ 1 year
+			domain.RoleCustomer: time.Hour * 30 * 12,
 		},
 	}
 )

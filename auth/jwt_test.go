@@ -80,7 +80,7 @@ func TestTokenProvider(t *testing.T) {
 		userAuth, err := p.ParseAndValidate(tokens.AccessToken)
 		require.Error(t, err)
 		require.Equal(t, ErrTokenExpired, err)
-		require.Zero(t, userAuth)
+		require.NotZero(t, userAuth)
 	})
 
 	t.Run("should generate new pair from 1st issuer and validate on 2nd issuer and retrieve ErrInvalidIssuer", func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestTokenProvider(t *testing.T) {
 		userAuth, err := p.ParseAndValidate(tokens.AccessToken)
 		require.Error(t, err)
 		require.Equal(t, ErrTokenExpired, err)
-		require.Zero(t, userAuth)
+		require.NotZero(t, userAuth)
 	})
 
 	t.Run("should generate new pair with custom ttl and return true because new ttl is much higher than default", func(t *testing.T) {

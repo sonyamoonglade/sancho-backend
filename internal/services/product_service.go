@@ -60,7 +60,7 @@ func (p productService) Create(ctx context.Context, dto dto.CreateProductDTO) (s
 	product := dto.ToDomain()
 	product.Category = category
 
-	productID, err := p.productStorage.Create(ctx, product)
+	productID, err := p.productStorage.Save(ctx, product)
 	if err != nil {
 		if errors.Is(err, storage.ErrAlreadyExists) {
 			return "", domain.ErrProductAlreadyExists

@@ -14,6 +14,7 @@ import (
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
 	"github.com/sonyamoonglade/sancho-backend/logger"
+	"github.com/sonyamoonglade/sancho-backend/pkg/hash"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -84,9 +85,6 @@ func (s *APISuite) initDeps(mongo *database.Mongo) {
 	})
 	logger.Get().Info("Booting e2e test")
 
-	storages := storage.NewStorages(mongo)
-	services := service.NewServices(service.Deps{Storages: storages})
-
 	var (
 		ttl    = time.Second * 5
 		key    = []byte("mama is ok")
@@ -96,7 +94,16 @@ func (s *APISuite) initDeps(mongo *database.Mongo) {
 	if err != nil {
 		panic(err)
 	}
-	jwtAuth := middleware.NewJWTAuthMiddleware(tokenProvider)
+
+	storages := storage.NewStorages(mongo)
+	services := service.NewServices(service.Deps{
+		Storages:      storages,
+		TokenProvider: tokenProvider,
+		Hasher:        hash.NewSHA1Hasher(),
+		TTLStrategy:   ttlStrategy,
+	})
+
+	jwtAuth := middleware.NewJWTAuthMiddleware(services.Auth, tokenProvider)
 	xReqID := new(middleware.XRequestIDMiddleware)
 	middlewares := middleware.NewMiddlewares(jwtAuth, xReqID)
 

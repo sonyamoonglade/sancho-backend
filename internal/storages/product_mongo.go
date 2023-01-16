@@ -58,7 +58,7 @@ func (p ProductStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
 	return products, nil
 }
 
-func (p ProductStorage) Create(ctx context.Context, product domain.Product) (primitive.ObjectID, error) {
+func (p ProductStorage) Save(ctx context.Context, product domain.Product) (primitive.ObjectID, error) {
 	r, err := p.products.InsertOne(ctx, product)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
