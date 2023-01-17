@@ -68,7 +68,7 @@ func (a authService) LoginAdmin(ctx context.Context, loginDto dto.LoginAdminDTO)
 
 	tokens, err := a.tokenProvider.GenerateNewPairWithTTL(auth.UserAuth{
 		Role:   domain.RoleAdmin,
-		UserID: admin.UserID,
+		UserID: admin.UserID.Hex(),
 	}, accessTokenTTL)
 	if err != nil {
 		return auth.Pair{}, err
@@ -79,7 +79,7 @@ func (a authService) LoginAdmin(ctx context.Context, loginDto dto.LoginAdminDTO)
 		ExpiresAt:    domain.NewExpiresAt(refreshTokenTTL),
 	}
 	err = a.userService.SaveSession(ctx, dto.SaveSessionDTO{
-		UserID:  admin.UserID,
+		UserID:  admin.UserID.Hex(),
 		Role:    admin.Role,
 		Session: session,
 	})
@@ -103,7 +103,7 @@ func (a authService) RefreshAdminToken(ctx context.Context, adminID, token strin
 
 	tokens, err := a.tokenProvider.GenerateNewPairWithTTL(auth.UserAuth{
 		Role:   domain.RoleAdmin,
-		UserID: admin.UserID,
+		UserID: admin.UserID.Hex(),
 	}, accessTokenTTL)
 	if err != nil {
 		return auth.Pair{}, err
@@ -115,7 +115,7 @@ func (a authService) RefreshAdminToken(ctx context.Context, adminID, token strin
 	}
 
 	err = a.userService.SaveSession(ctx, dto.SaveSessionDTO{
-		UserID:  admin.UserID,
+		UserID:  admin.UserID.Hex(),
 		Role:    admin.Role,
 		Session: session,
 	})

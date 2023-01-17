@@ -1,10 +1,12 @@
 package domain
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Worker struct {
-	UserID   string  `json:"userId" bson:"userId"`
-	Login    string  `json:"login" bson:"login"`
-	Role     Role    `json:"role" bson:"role"`
-	Password string  `json:"password" bson:"password"`
-	Session  Session `json:"session,omitempty" bson:"session,omitempty"`
-	Name     string  `json:"name" bson:"name"`
+	UserID   primitive.ObjectID `json:"userId" bson:"userId"`
+	Login    string             `json:"login" bson:"login"`
+	Role     Role               `json:"role" bson:"role"`
+	Password string             `json:"password" bson:"password"`
+	Session  Session            `json:"session,omitempty" bson:"session,omitempty"`
+	Name     string             `json:"name" bson:"name"`
 }

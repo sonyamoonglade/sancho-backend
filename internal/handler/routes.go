@@ -28,3 +28,15 @@ func (h Handler) initAdminsAPI(api fiber.Router) {
 		products.Put("/:id/disapprove", h.AdminDisapproveProduct)
 	}
 }
+
+func (h Handler) initOrdersAPI(api fiber.Router) {
+	m := h.middlewares
+	var (
+		customerAuth = m.JWTAuth.Use(domain.RoleCustomer)
+	)
+
+	order := api.Group("/order")
+	{
+		order.Post("/createUserOrder", customerAuth, h.CreateUserOrder)
+	}
+}

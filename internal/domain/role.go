@@ -24,19 +24,6 @@ type Role struct {
 	R string
 }
 
-func FromString(s string) Role {
-	switch s {
-	case RoleCustomer.R:
-		return RoleCustomer
-	case RoleWorker.R:
-		return RoleWorker
-	case RoleAdmin.R:
-		return RoleAdmin
-	default:
-		return RoleUnknown
-	}
-}
-
 func (r Role) String() string {
 	return r.R
 }

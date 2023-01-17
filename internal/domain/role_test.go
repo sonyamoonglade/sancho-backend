@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCustomJSONSerialize(t *testing.T) {
+func TestRoleCustomJSONSerialize(t *testing.T) {
 	role := RoleCustomer
 	marshalled, err := json.Marshal(role)
 	require.NoError(t, err)
@@ -15,5 +15,5 @@ func TestCustomJSONSerialize(t *testing.T) {
 	var decodedRole Role
 	err = json.Unmarshal(marshalled, &decodedRole)
 	require.NoError(t, err)
-	require.Equal(t, RoleCustomer.String(), decodedRole.String())
+	require.Equal(t, RoleCustomer, decodedRole)
 }
