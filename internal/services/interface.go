@@ -19,10 +19,8 @@ type Product interface {
 	Disapprove(ctx context.Context, productID string) error
 }
 
-type Auth interface {
-	RegisterAdmin(ctx context.Context, dto dto.RegisterAdminDTO) (string, error)
-	LoginAdmin(ctx context.Context, dto dto.LoginAdminDTO) (auth.Pair, error)
-	RefreshAdminToken(ctx context.Context, adminID, token string) (auth.Pair, error)
+type Order interface {
+	CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error)
 }
 
 type User interface {
@@ -31,4 +29,10 @@ type User interface {
 	GetAdminByRefreshToken(ctx context.Context, adminID, token string) (domain.Admin, error)
 
 	SaveSession(ctx context.Context, dto dto.SaveSessionDTO) error
+}
+
+type Auth interface {
+	RegisterAdmin(ctx context.Context, dto dto.RegisterAdminDTO) (string, error)
+	LoginAdmin(ctx context.Context, dto dto.LoginAdminDTO) (auth.Pair, error)
+	RefreshAdminToken(ctx context.Context, adminID, token string) (auth.Pair, error)
 }

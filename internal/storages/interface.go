@@ -30,3 +30,7 @@ type User interface {
 
 	SaveSession(ctx context.Context, dto dto.SaveSessionDTO) error
 }
+
+type Order interface {
+	SaveOrder(ctx context.Context, order domain.Order) (string, error)
+}

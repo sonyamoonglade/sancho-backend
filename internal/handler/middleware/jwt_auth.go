@@ -51,6 +51,7 @@ func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
 
 		token = split[1]
 		userAuth, err := m.tokenProvider.ParseAndValidate(token)
+
 		// Token isn't valid
 		if err != nil {
 			switch true {

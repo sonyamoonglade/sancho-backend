@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+
+	"github.com/sonyamoonglade/sancho-backend/internal/domain"
+	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 )
 
 const baseURL = "http://localhost:8000"
@@ -23,6 +26,17 @@ func newBody(b interface{}) io.Reader {
 		panic(err)
 	}
 	return bytes.NewReader(bodyBytes)
+}
+
+func newAccessToken(p auth.TokenProvider, userID string, role domain.Role) string {
+	tokens, err := p.GenerateNewPair(auth.UserAuth{
+		Role:   role,
+		UserID: userID,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return tokens.AccessToken
 }
 
 func checkIsDescending(arr []int32) bool {

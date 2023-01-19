@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/sonyamoonglade/sancho-backend/internal/domain"
+import (
+	"github.com/sonyamoonglade/sancho-backend/internal/domain"
+)
 
 type SaveSessionDTO struct {
 	UserID  string

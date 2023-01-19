@@ -9,6 +9,7 @@ type Services struct {
 	Product Product
 	Auth    Auth
 	User    User
+	Order   Order
 }
 
 type Deps struct {
@@ -25,5 +26,6 @@ func NewServices(deps Deps) *Services {
 		Product: NewProductService(stg.Product),
 		User:    userService,
 		Auth:    NewAuthService(userService, deps.TokenProvider, deps.Hasher, deps.TTLStrategy),
+		Order:   NewOrderService(stg.Order),
 	}
 }

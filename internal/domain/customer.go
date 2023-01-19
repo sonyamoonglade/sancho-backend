@@ -5,7 +5,7 @@ import (
 )
 
 type Customer struct {
-	UserID          primitive.ObjectID   `json:"userId" bson:"userId,omitempty"`
+	UserID          primitive.ObjectID   `json:"userId" bson:"_id,omitempty"`
 	PhoneNumber     string               `json:"phoneNumber" bson:"phoneNumber"`
 	DeliveryAddress *UserDeliveryAddress `json:"deliveryAddress,omitempty" bson:"deliveryAddress,omitempty"`
 	Role            Role                 `json:"role" bson:"role"`

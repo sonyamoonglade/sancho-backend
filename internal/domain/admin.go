@@ -13,7 +13,7 @@ var (
 )
 
 type Admin struct {
-	UserID   primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
+	UserID   primitive.ObjectID `json:"userId" bson:"_id,omitempty"`
 	Login    string             `json:"login" bson:"login"`
 	Role     Role               `json:"role" bson:"role"`
 	Password string             `json:"password" bson:"password"`

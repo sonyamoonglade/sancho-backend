@@ -11,6 +11,8 @@ func TestRoleCustomJSONSerialize(t *testing.T) {
 	role := RoleCustomer
 	marshalled, err := json.Marshal(role)
 	require.NoError(t, err)
+	expected := `{"role":"customer"}`
+	require.Equal(t, expected, string(marshalled))
 
 	var decodedRole Role
 	err = json.Unmarshal(marshalled, &decodedRole)

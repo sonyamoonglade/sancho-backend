@@ -124,5 +124,9 @@ func (s *APISuite) populateDB(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	_, err = s.db.Collection(storage.CollectionCustomers).InsertOne(ctx, customer, nil)
+	if err != nil {
+		return err
+	}
 	return nil
 }

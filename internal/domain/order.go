@@ -1,11 +1,15 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type Order struct {
-	OrderID           string                `json:"orderId" bson:"orderId,omitempty"`
+	OrderID           string                `json:"orderId" bson:"_id,omitempty"`
+	NanoID            string                `json:"nanoId" bson:"nanoId"`
 	CustomerID        string                `json:"customerId" bson:"customerId"`
 	Cart              []Product             `json:"cart" bson:"cart"`
+	Pay               Pay                   `json:"pay" bson:"pay"`
 	Amount            int64                 `json:"amount" bson:"amount"`
 	Discount          int64                 `json:"discount" bson:"discount"`
 	DiscountedAmount  int64                 `json:"discountedAmount" bson:"discountedAmount"`

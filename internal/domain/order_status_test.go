@@ -11,6 +11,8 @@ func TestOrderStatusCustomJSONSerialize(t *testing.T) {
 	orderStatus := StatusWaitingForVerification
 	marshalled, err := json.Marshal(orderStatus)
 	require.NoError(t, err)
+	expected := `{"status":"waiting for verification"}`
+	require.Equal(t, expected, string(marshalled))
 
 	var decodedOrderStatus OrderStatus
 	err = json.Unmarshal(marshalled, &decodedOrderStatus)

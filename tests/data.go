@@ -4,6 +4,7 @@ import (
 	"time"
 
 	f "github.com/brianvoe/gofakeit/v6"
+	"github.com/google/uuid"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -61,6 +62,23 @@ var (
 				EnergyValue: 50,
 				Nutrients:   nil,
 			},
+		},
+	}
+
+	customer = domain.Customer{
+		UserID:      primitive.NewObjectID(),
+		PhoneNumber: "+79128557826",
+		DeliveryAddress: &domain.UserDeliveryAddress{
+			Address:   "Смирнова 20а",
+			Entrance:  2,
+			Floor:     9,
+			Apartment: 73,
+		},
+		Role: domain.RoleCustomer,
+		Name: "Филипп",
+		Session: domain.Session{
+			RefreshToken: uuid.NewString(),
+			ExpiresAt:    time.Now().UTC().Add(time.Hour * 24),
 		},
 	}
 

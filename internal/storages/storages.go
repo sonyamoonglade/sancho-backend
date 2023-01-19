@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	CollectionOrders           = "orders"
 	CollectionProduct          = "product"
 	CollectionCategory         = "category"
 	CollectionCustomers        = "customers"
@@ -23,12 +24,14 @@ var (
 type Storages struct {
 	Product Product
 	User    User
+	Order   Order
 }
 
 func NewStorages(db *database.Mongo) *Storages {
 	return &Storages{
 		Product: NewProductStorage(db.Collection(CollectionProduct), db.Collection(CollectionCategory)),
 		User:    NewUserStorage(db.Collection(CollectionCustomers), db.Collection(CollectionAdminsAndWorkers)),
+		Order:   NewOrderStorage(db.Collection(CollectionOrders)),
 	}
 }
 
