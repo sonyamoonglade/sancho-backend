@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
@@ -11,6 +12,7 @@ import (
 type Product interface {
 	GetByID(ctx context.Context, productID string) (domain.Product, error)
 	GetAll(ctx context.Context) ([]domain.Product, error)
+	GetByIDs(ctx context.Context, ids []string) ([]domain.Product, error)
 	Save(ctx context.Context, product domain.Product) (primitive.ObjectID, error)
 	Update(ctx context.Context, dto dto.UpdateProductDTO) error
 	Delete(ctx context.Context, productID string) error
@@ -32,5 +34,7 @@ type User interface {
 }
 
 type Order interface {
-	SaveOrder(ctx context.Context, order domain.Order) (string, error)
+	GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error)
+	GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error)
+	SaveOrder(ctx context.Context, order domain.Order) (primitive.ObjectID, error)
 }

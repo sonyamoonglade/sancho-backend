@@ -11,7 +11,6 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/handler/input"
 	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
-	"github.com/sonyamoonglade/sancho-backend/tests/fixtures"
 )
 
 func (s *APISuite) TestCreateProduct() {
@@ -27,7 +26,7 @@ func (s *APISuite) TestCreateProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		})
 		req, _ := http.NewRequest(http.MethodPost, buildURL("/api/admins/products/create"), inputBody)
 		tokens, _ := s.tokenProvider.GenerateNewPair(auth.UserAuth{
@@ -48,7 +47,7 @@ func (s *APISuite) TestCreateProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: "some-random-shit",
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		})
 		req, _ := http.NewRequest(http.MethodPost, buildURL("/api/admins/products/create"), inputBody)
 		tokens, _ := s.tokenProvider.GenerateNewPair(auth.UserAuth{
@@ -71,7 +70,7 @@ func (s *APISuite) TestCreateProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		})
 		req, _ := http.NewRequest(http.MethodPost, buildURL("/api/admins/products/create"), inputBody)
 		tokens, _ := s.tokenProvider.GenerateNewPair(auth.UserAuth{
@@ -152,7 +151,7 @@ func (s *APISuite) TestApproveProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		}
 		productID, err := s.services.Product.Create(context.Background(), inputBody.ToDTO())
 		require.NoError(err)
@@ -191,7 +190,7 @@ func (s *APISuite) TestDisapproveProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		}
 		productID, err := s.services.Product.Create(context.Background(), inputBody.ToDTO())
 		require.NoError(err)
@@ -222,7 +221,7 @@ func (s *APISuite) TestDisapproveProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		}
 		productID, err := s.services.Product.Create(context.Background(), inputBody.ToDTO())
 		require.NoError(err)
@@ -271,7 +270,7 @@ func (s *APISuite) TestUpdateProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		}
 		productID, err := s.services.Product.Create(context.Background(), inputBody.ToDTO())
 		require.NoError(err)
@@ -339,7 +338,7 @@ func (s *APISuite) TestUpdateProduct() {
 			// Initial product with category pizza
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		}
 		_, err := s.services.Product.Create(context.Background(), inputBody1.ToDTO())
 		require.NoError(err)
@@ -352,7 +351,7 @@ func (s *APISuite) TestUpdateProduct() {
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
 			Price:        int64(f.IntRange(100, 500)),
-			Features:     fixtures.GetNonLiquidFeatures(),
+			Features:     getNonLiquidFeatures(),
 		}
 		productID2, err := s.services.Product.Create(context.Background(), inputBody2.ToDTO())
 		require.NoError(err)
@@ -383,4 +382,18 @@ func (s *APISuite) TestUpdateProduct() {
 		require.Equal(product.Name, inputBody2.Name)
 		require.Equal(product.Price, inputBody2.Price)
 	})
+}
+
+func getNonLiquidFeatures() domain.Features {
+	return domain.Features{
+		IsLiquid:    false,
+		Weight:      int32(f.IntRange(100, 200)),
+		Volume:      0,
+		EnergyValue: int32(f.IntRange(200, 500)),
+		Nutrients: &domain.Nutrients{
+			Carbs:    f.Int32(),
+			Proteins: f.Int32(),
+			Fats:     f.Int32(),
+		},
+	}
 }

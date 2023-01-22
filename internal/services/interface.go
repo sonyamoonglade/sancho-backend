@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
@@ -11,6 +12,7 @@ import (
 type Product interface {
 	GetByID(ctx context.Context, productID string) (domain.Product, error)
 	GetAll(ctx context.Context) ([]domain.Product, error)
+	GetProductsByIDs(ctx context.Context, ids []string) ([]domain.Product, error)
 	GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error)
 	Create(ctx context.Context, dto dto.CreateProductDTO) (string, error)
 	Delete(ctx context.Context, productID string) error
@@ -20,6 +22,8 @@ type Product interface {
 }
 
 type Order interface {
+	GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error)
+	GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error)
 	CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error)
 }
 

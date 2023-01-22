@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
+	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	"github.com/spf13/viper"
 )
 
@@ -23,10 +25,11 @@ type AppConfig struct {
 	App struct {
 		Port string
 	}
+
+	Order service.OrderConfig
 }
 
 func ReadConfig(path string) (AppConfig, error) {
-
 	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return AppConfig{}, ErrConfigNoExist
@@ -54,6 +57,11 @@ func ReadConfig(path string) (AppConfig, error) {
 		return AppConfig{}, fmt.Errorf("missing DB_NAME env")
 	}
 
+	pendingOrderWaitTimeMinutes := viper.GetInt64("order.pending_wait_time")
+	if pendingOrderWaitTimeMinutes == 0 {
+		return AppConfig{}, fmt.Errorf("missing order.pending_wait_time in config")
+	}
+
 	return AppConfig{
 		Database: struct {
 			URI  string
@@ -66,6 +74,9 @@ func ReadConfig(path string) (AppConfig, error) {
 			Port string
 		}{
 			Port: appPort,
+		},
+		Order: service.OrderConfig{
+			PendingOrderWaitTime: time.Duration(pendingOrderWaitTimeMinutes) * time.Minute,
 		},
 	}, nil
 }

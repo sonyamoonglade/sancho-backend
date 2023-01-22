@@ -1,14 +1,22 @@
 package domain
 
 import (
+	"errors"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+var (
+	ErrOrderNotFound    = errors.New("order not found")
+	ErrHavePendingOrder = errors.New("have pending order")
 )
 
 type Order struct {
-	OrderID           string                `json:"orderId" bson:"_id,omitempty"`
+	OrderID           primitive.ObjectID    `json:"orderId" bson:"_id,omitempty"`
 	NanoID            string                `json:"nanoId" bson:"nanoId"`
 	CustomerID        string                `json:"customerId" bson:"customerId"`
-	Cart              []Product             `json:"cart" bson:"cart"`
+	Cart              []CartProduct         `json:"cart" bson:"cart"`
 	Pay               Pay                   `json:"pay" bson:"pay"`
 	Amount            int64                 `json:"amount" bson:"amount"`
 	Discount          int64                 `json:"discount" bson:"discount"`

@@ -22,13 +22,13 @@ func HandleError(c *fiber.Ctx, err error) error {
 		return c.Status(http.StatusInternalServerError).SendString("internal error")
 	}
 
-	if updateError, ok := err.(appErrors.UpdateError); ok {
+	if duplicateError, ok := err.(appErrors.DuplicateError); ok {
 		logger.Get().Debug("update error",
 			zap.String("X-Request-Id", c.GetRespHeaders()["X-Request-Id"]),
 			zap.Error(err),
 		)
-		return c.Status(updateError.Code()).JSON(fiber.Map{
-			"message": updateError.Error(),
+		return c.Status(duplicateError.Code()).JSON(fiber.Map{
+			"message": duplicateError.Error(),
 		})
 	}
 

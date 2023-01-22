@@ -13,7 +13,9 @@ func (h Handler) CreateUserOrder(c *fiber.Ctx) error {
 	if err := c.BodyParser(&inp); err != nil {
 		return err
 	}
-
+	if ok, msg := validation.ValidateStruct(inp); !ok {
+		return c.Status(http.StatusBadRequest).SendString(msg)
+	}
 	if ok, msg := validation.ValidatePayType(inp.Pay); !ok {
 		return c.Status(http.StatusBadRequest).SendString(msg)
 	}

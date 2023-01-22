@@ -37,6 +37,10 @@ func (p productService) GetAll(ctx context.Context) ([]domain.Product, error) {
 	return catalog, nil
 }
 
+func (p productService) GetProductsByIDs(ctx context.Context, ids []string) ([]domain.Product, error) {
+	return p.productStorage.GetByIDs(ctx, ids)
+}
+
 func (p productService) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
 	categories, err := p.productStorage.GetAllCategories(ctx, sorted)
 	if err != nil {
@@ -87,8 +91,8 @@ func (p productService) Update(ctx context.Context, dto dto.UpdateProductDTO) er
 		if errors.Is(err, storage.ErrNotFound) {
 			return domain.ErrProductNotFound
 		}
-		if updateError, ok := err.(appErrors.UpdateError); ok {
-			return updateError
+		if duplicateError, ok := err.(appErrors.DuplicateError); ok {
+			return duplicateError
 		}
 		return appErrors.WithContext("productStorage.Update", err)
 	}

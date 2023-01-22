@@ -13,19 +13,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type ProductStorage struct {
+type productStorage struct {
 	products   *mongo.Collection
 	categories *mongo.Collection
 }
 
 func NewProductStorage(products *mongo.Collection, categories *mongo.Collection) Product {
-	return &ProductStorage{
+	return &productStorage{
 		products:   products,
 		categories: categories,
 	}
 }
 
-func (p ProductStorage) GetByID(ctx context.Context, productID string) (domain.Product, error) {
+func (p productStorage) GetByID(ctx context.Context, productID string) (domain.Product, error) {
 	result := p.products.FindOne(ctx, bson.M{"_id": ToObjectID(productID)}, nil)
 	if err := result.Err(); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -41,7 +41,7 @@ func (p ProductStorage) GetByID(ctx context.Context, productID string) (domain.P
 	return product, nil
 }
 
-func (p ProductStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
+func (p productStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
 	opts := options.Find()
 	opts.SetSort(bson.M{"category.rank": -1})
 
@@ -57,8 +57,35 @@ func (p ProductStorage) GetAll(ctx context.Context) ([]domain.Product, error) {
 
 	return products, nil
 }
+func (p productStorage) GetByIDs(ctx context.Context, ids []string) ([]domain.Product, error) {
+	objectIDs := make([]primitive.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		objectIDs = append(objectIDs, ToObjectID(id))
+	}
+	query := bson.D{bson.E{
+		Key: "_id",
+		Value: bson.E{
+			Key:   "$in",
+			Value: objectIDs,
+		},
+	}}
+	cursor, err := p.products.Find(ctx, query, nil)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, domain.ErrProductNotFound
+		}
+		return nil, err
+	}
 
-func (p ProductStorage) Save(ctx context.Context, product domain.Product) (primitive.ObjectID, error) {
+	products := make([]domain.Product, 0, len(ids))
+	if err := cursor.All(ctx, &products); err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+func (p productStorage) Save(ctx context.Context, product domain.Product) (primitive.ObjectID, error) {
 	r, err := p.products.InsertOne(ctx, product)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
@@ -69,7 +96,7 @@ func (p ProductStorage) Save(ctx context.Context, product domain.Product) (primi
 	return r.InsertedID.(primitive.ObjectID), nil
 }
 
-func (p ProductStorage) Delete(ctx context.Context, productID string) error {
+func (p productStorage) Delete(ctx context.Context, productID string) error {
 	result, err := p.products.DeleteOne(ctx, bson.M{"_id": ToObjectID(productID)})
 	if err != nil {
 		return err
@@ -80,7 +107,7 @@ func (p ProductStorage) Delete(ctx context.Context, productID string) error {
 	return nil
 }
 
-func (p ProductStorage) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
+func (p productStorage) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
 	updateQuery := bson.M{}
 	if dto.Price != nil {
 		updateQuery["price"] = *dto.Price
@@ -107,7 +134,7 @@ func (p ProductStorage) Update(ctx context.Context, dto dto.UpdateProductDTO) er
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			field, value := GetFieldAndValueFromDuplicateError(err)
-			return appErrors.NewUpdateError("product", field, value)
+			return appErrors.NewDuplicateError("product", field, value)
 		}
 		return err
 	}
@@ -117,7 +144,7 @@ func (p ProductStorage) Update(ctx context.Context, dto dto.UpdateProductDTO) er
 	return nil
 }
 
-func (p ProductStorage) Approve(ctx context.Context, productID string) error {
+func (p productStorage) Approve(ctx context.Context, productID string) error {
 	query := bson.D{
 		bson.E{Key: "$set", Value: bson.D{
 			bson.E{
@@ -136,7 +163,7 @@ func (p ProductStorage) Approve(ctx context.Context, productID string) error {
 	return nil
 }
 
-func (p ProductStorage) Disapprove(ctx context.Context, productID string) error {
+func (p productStorage) Disapprove(ctx context.Context, productID string) error {
 	query := bson.D{
 		bson.E{Key: "$set", Value: bson.D{
 			bson.E{
@@ -155,7 +182,7 @@ func (p ProductStorage) Disapprove(ctx context.Context, productID string) error 
 	return nil
 }
 
-func (p ProductStorage) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
+func (p productStorage) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
 	var opts *options.FindOptions
 	if sorted {
 		opts = options.Find()
@@ -179,7 +206,7 @@ func (p ProductStorage) GetAllCategories(ctx context.Context, sorted bool) ([]do
 	return categories, nil
 }
 
-func (p ProductStorage) GetCategoryByName(ctx context.Context, categoryName string) (domain.Category, error) {
+func (p productStorage) GetCategoryByName(ctx context.Context, categoryName string) (domain.Category, error) {
 	res := p.categories.FindOne(ctx, bson.M{"name": categoryName}, nil)
 	if err := res.Err(); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {

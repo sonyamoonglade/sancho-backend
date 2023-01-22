@@ -10,12 +10,15 @@ stop-dev:
 
 SERVICE_MOCKS_SRC=internal/services/interface.go
 SERVICE_MOCKS_DST=internal/services/mocks/mock.go
+STORAGE_MOCKS_SRC=internal/storages/interface.go
+STORAGE_MOCKS_DST=internal/storages/mocks/mock.go
 
 premock:
-	rm -rf ${SERVICE_MOCKS_DST}
+	rm -rf ${SERVICE_MOCKS_DST} ${STORAGE_MOCKS_DST}
 
 mocks: premock
 	mockgen -source ${SERVICE_MOCKS_SRC} -destination ${SERVICE_MOCKS_DST}
+	mockgen -source ${STORAGE_MOCKS_SRC} -destination ${STORAGE_MOCKS_DST}
 
 unit-test:
 	go test -short -race ./...

@@ -20,8 +20,6 @@ func (s *APISuite) TestCreateUserOrder() {
 		cartProduct := products[0].(domain.Product)
 		inp := input.CreateUserOrderInput{
 			Pay:         domain.PayOnline,
-			Cart:        []string{cartProduct.ProductID.Hex()},
-			Amount:      cartProduct.Price,
 			IsDelivered: true,
 			DeliveryAddress: &domain.OrderDeliveryAddress{
 				IsAsap:      true,

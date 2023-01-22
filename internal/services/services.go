@@ -17,15 +17,17 @@ type Deps struct {
 	TokenProvider auth.TokenProvider
 	Hasher        Hasher
 	TTLStrategy   TTLStrategy
+	OrderConfig   OrderConfig
 }
 
 func NewServices(deps Deps) *Services {
 	stg := deps.Storages
 	userService := NewUserService(stg.User, deps.Hasher)
+	productService := NewProductService(stg.Product)
 	return &Services{
-		Product: NewProductService(stg.Product),
+		Product: productService,
 		User:    userService,
 		Auth:    NewAuthService(userService, deps.TokenProvider, deps.Hasher, deps.TTLStrategy),
-		Order:   NewOrderService(stg.Order),
+		Order:   NewOrderService(stg.Order, productService, deps.OrderConfig),
 	}
 }

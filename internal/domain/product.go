@@ -27,6 +27,11 @@ type Product struct {
 	Features    Features           `bson:"features" json:"features"`
 }
 
+type CartProduct struct {
+	Product
+	Quantity int32 `json:"quantity" bson:"quantity"`
+}
+
 type Category struct {
 	CategoryID primitive.ObjectID `bson:"_id" json:"categoryId"`
 	Rank       int32              `bson:"rank" json:"rank"`
