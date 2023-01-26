@@ -8,7 +8,6 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
-	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"github.com/sonyamoonglade/sancho-backend/pkg/nanoid"
 )
 
@@ -111,7 +110,6 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 
 //todo: test
 func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartProductDTO) (int64, []domain.CartProduct, error) {
-	logger.Get().Sugar().Debugf("calcaulte cart amount receive cart: %+v\n", cart)
 	productIDs := make([]string, 0, len(cart))
 	for _, product := range cart {
 		productIDs = append(productIDs, product.ProductID)
@@ -122,7 +120,6 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 		return 0, nil, err
 	}
 
-	logger.Get().Sugar().Debugf("products: %+v\n", products)
 	var total int64
 	cartProducts := make([]domain.CartProduct, 0, len(cart))
 	for _, cartProduct := range cart {
@@ -136,6 +133,5 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 			}
 		}
 	}
-	logger.Get().Sugar().Debugf("cart products: %+v\n", cartProducts)
 	return total, cartProducts, nil
 }

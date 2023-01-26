@@ -222,6 +222,21 @@ func (mr *MockOrderMockRecorder) GetLastOrderByCustomerID(ctx, customerID interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastOrderByCustomerID", reflect.TypeOf((*MockOrder)(nil).GetLastOrderByCustomerID), ctx, customerID)
 }
 
+// GetOrderByID mocks base method.
+func (m *MockOrder) GetOrderByID(ctx context.Context, orderID string) (domain.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrderByID", ctx, orderID)
+	ret0, _ := ret[0].(domain.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrderByID indicates an expected call of GetOrderByID.
+func (mr *MockOrderMockRecorder) GetOrderByID(ctx, orderID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderByID", reflect.TypeOf((*MockOrder)(nil).GetOrderByID), ctx, orderID)
+}
+
 // GetOrderByNanoIDAt mocks base method.
 func (m *MockOrder) GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error) {
 	m.ctrl.T.Helper()

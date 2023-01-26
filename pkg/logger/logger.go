@@ -4,7 +4,14 @@ import (
 	"go.uber.org/zap"
 )
 
-var globalLogger *zap.Logger
+var (
+	globalLogger  *zap.Logger
+	defaultConfig = Config{
+		Strict:           false,
+		Production:       false,
+		EnableStacktrace: true,
+	}
+)
 
 type Config struct {
 	Out              []string
@@ -38,5 +45,10 @@ func NewLogger(cfg Config) error {
 }
 
 func Get() *zap.Logger {
+	if globalLogger == nil {
+		if err := NewLogger(defaultConfig); err != nil {
+			panic(err)
+		}
+	}
 	return globalLogger
 }
