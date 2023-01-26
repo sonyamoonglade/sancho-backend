@@ -8,7 +8,7 @@ import (
 type CreateUserOrderInput struct {
 	Pay             domain.Pay                   `json:"pay" validate:"required"`
 	Cart            []CartProductInput           `json:"cart" validate:"required"`
-	IsDelivered     bool                         `json:"isDelivered" validate:"required"`
+	IsDelivered     bool                         `json:"isDelivered"`
 	DeliveryAddress *domain.OrderDeliveryAddress `json:"deliveryAddress,omitempty"`
 }
 

@@ -21,6 +21,18 @@ func NewOrderStorage(orders *mongo.Collection) Order {
 	return &orderStorage{orders: orders}
 }
 
+func (o orderStorage) GetOrderByID(ctx context.Context, orderID string) (domain.Order, error) {
+	result := o.orders.FindOne(ctx, bson.M{"_id": ToObjectID(orderID)}, nil)
+	if err := result.Err(); err != nil {
+		return domain.Order{}, err
+	}
+	var order domain.Order
+	if err := result.Decode(&order); err != nil {
+		return domain.Order{}, err
+	}
+	return order, nil
+}
+
 func (o orderStorage) GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error) {
 	opts := options.FindOne()
 	opts.SetSort(bson.M{"createdAt": -1})

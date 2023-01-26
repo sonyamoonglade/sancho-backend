@@ -11,6 +11,7 @@ var (
 	ErrProductAlreadyApproved    = errors.New("product is already approved")
 	ErrProductAlreadyDisapproved = errors.New("product is already disapproved")
 	ErrProductNotFound           = errors.New("product not found")
+	ErrNoProducts                = errors.New("products not found")
 	ErrCategoryNotFound          = errors.New("category not found")
 	ErrNoCategories              = errors.New("categories not found")
 )

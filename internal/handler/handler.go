@@ -24,4 +24,5 @@ func (h Handler) InitAPI(router fiber.Router) {
 	api.Use(m.XRequestID.Use())
 	h.initProductAPI(api)
 	h.initAdminsAPI(api)
+	h.initOrdersAPI(api)
 }

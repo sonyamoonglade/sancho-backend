@@ -8,6 +8,7 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"github.com/sonyamoonglade/sancho-backend/pkg/nanoid"
 )
 
@@ -25,6 +26,10 @@ type orderService struct {
 
 func NewOrderService(orderStorage storage.Order, productService Product, orderConfig OrderConfig) Order {
 	return &orderService{orderStorage: orderStorage, productService: productService, orderConfig: orderConfig}
+}
+
+func (o orderService) GetOrderByID(ctx context.Context, orderID string) (domain.Order, error) {
+	return o.orderStorage.GetOrderByID(ctx, orderID)
 }
 
 func (o orderService) GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error) {
@@ -59,9 +64,9 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 	}
 
 	var (
-		nanoID   string
-		day      = time.Hour * 24
-		tomorrow = now.Add(day)
+		nanoID    string
+		day       = time.Hour * 24
+		yesterday = now.Add(day * -1)
 	)
 	for {
 		nanoID, err = nanoid.GenerateNanoID()
@@ -69,8 +74,8 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 			return "", err
 		}
 
-		// Look for orders within 24h to have same nanoID
-		_, err := o.GetOrderByNanoIDAt(ctx, nanoID, now, tomorrow)
+		// Look for orders within 24h to have same nanoID. It's looking in [now -24h, now]
+		_, err := o.GetOrderByNanoIDAt(ctx, nanoID, yesterday, now)
 		if err != nil {
 			// Non-duplicate nanoID has found so we stop
 			if errors.Is(err, domain.ErrOrderNotFound) {
@@ -106,6 +111,7 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 
 //todo: test
 func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartProductDTO) (int64, []domain.CartProduct, error) {
+	logger.Get().Sugar().Debugf("calcaulte cart amount receive cart: %+v\n", cart)
 	productIDs := make([]string, 0, len(cart))
 	for _, product := range cart {
 		productIDs = append(productIDs, product.ProductID)
@@ -116,6 +122,7 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 		return 0, nil, err
 	}
 
+	logger.Get().Sugar().Debugf("products: %+v\n", products)
 	var total int64
 	cartProducts := make([]domain.CartProduct, 0, len(cart))
 	for _, cartProduct := range cart {
@@ -129,6 +136,6 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 			}
 		}
 	}
-
+	logger.Get().Sugar().Debugf("cart products: %+v\n", cartProducts)
 	return total, cartProducts, nil
 }

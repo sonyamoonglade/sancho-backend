@@ -62,17 +62,16 @@ func (p productStorage) GetByIDs(ctx context.Context, ids []string) ([]domain.Pr
 	for _, id := range ids {
 		objectIDs = append(objectIDs, ToObjectID(id))
 	}
+
 	query := bson.D{bson.E{
-		Key: "_id",
-		Value: bson.E{
-			Key:   "$in",
-			Value: objectIDs,
-		},
+		Key:   "_id",
+		Value: bson.M{"$in": objectIDs},
 	}}
-	cursor, err := p.products.Find(ctx, query, nil)
+
+	cursor, err := p.products.Find(ctx, query)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, domain.ErrProductNotFound
+			return nil, domain.ErrNoProducts
 		}
 		return nil, err
 	}

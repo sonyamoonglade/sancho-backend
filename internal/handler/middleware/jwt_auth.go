@@ -9,6 +9,8 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	service "github.com/sonyamoonglade/sancho-backend/internal/services"
 	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
+	"go.uber.org/zap"
 )
 
 const (
@@ -71,7 +73,9 @@ func (m JWTAuthMiddleware) Use(requiredRole domain.Role) fiber.Handler {
 			return c.Status(http.StatusForbidden).SendString(ResponseAccessDenied)
 		}
 
-		c.Locals(userAuth, userAuth.UserID)
+		logger.Get().Debug("userID", zap.String("userID", userAuth.UserID))
+		c.Locals(userIDCtx, userAuth.UserID)
+
 		return c.Next()
 	}
 }

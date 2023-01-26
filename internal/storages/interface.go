@@ -34,6 +34,7 @@ type User interface {
 }
 
 type Order interface {
+	GetOrderByID(ctx context.Context, orderID string) (domain.Order, error)
 	GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error)
 	GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error)
 	SaveOrder(ctx context.Context, order domain.Order) (primitive.ObjectID, error)
