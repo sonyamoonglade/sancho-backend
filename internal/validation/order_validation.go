@@ -7,7 +7,7 @@ import (
 
 const (
 	invalidPayMethod = "invalid pay method"
-	emptyCart        = "empty cart"
+	emptyCart        = "cart is empty"
 )
 
 func ValidatePayMethod(p domain.Pay) (ok bool, msg string) {

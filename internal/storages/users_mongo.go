@@ -31,7 +31,6 @@ func (u userStorage) GetAdminByLogin(ctx context.Context, login string) (domain.
 }
 
 func (u userStorage) GetAdminByRefreshToken(ctx context.Context, adminID, token string) (domain.Admin, error) {
-
 	query := bson.D{bson.E{
 		Key:   "_id",
 		Value: adminID,
@@ -59,23 +58,46 @@ func (u userStorage) GetAdminByRefreshToken(ctx context.Context, adminID, token 
 	return admin, nil
 }
 
-func (u userStorage) SaveAdmin(ctx context.Context, admin domain.Admin) (string, error) {
+func (u userStorage) GetCustomerByPhoneNumber(ctx context.Context, phoneNumber string) (domain.Customer, error) {
+	result := u.customers.FindOne(ctx, bson.M{"phoneNumber": phoneNumber})
+	if err := result.Err(); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.Customer{}, domain.ErrCustomerNotFound
+		}
+		return domain.Customer{}, err
+	}
+
+	var customer domain.Customer
+	if err := result.Decode(&customer); err != nil {
+		return domain.Customer{}, err
+	}
+
+	return customer, nil
+}
+
+func (u userStorage) SaveAdmin(ctx context.Context, admin domain.Admin) (primitive.ObjectID, error) {
 	res, err := u.adminsAndWorkers.InsertOne(ctx, admin)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return "", domain.ErrAdminAlreadyExists
+			return primitive.ObjectID{}, domain.ErrAdminAlreadyExists
 		}
-		return "", err
+		return primitive.ObjectID{}, err
 	}
-	return res.InsertedID.(primitive.ObjectID).Hex(), nil
+	return res.InsertedID.(primitive.ObjectID), nil
 }
 
-func (u userStorage) SaveCustomer(ctx context.Context, customer domain.Customer) error {
-	//TODO implement me
-	panic("implement me")
+func (u userStorage) SaveCustomer(ctx context.Context, customer domain.Customer) (primitive.ObjectID, error) {
+	res, err := u.customers.InsertOne(ctx, customer)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return primitive.ObjectID{}, domain.ErrCustomerExists
+		}
+		return primitive.ObjectID{}, err
+	}
+	return res.InsertedID.(primitive.ObjectID), nil
 }
 
-func (u userStorage) SaveWorker(ctx context.Context, worker domain.Worker) error {
+func (u userStorage) SaveWorker(ctx context.Context, worker domain.Worker) (primitive.ObjectID, error) {
 	//TODO implement me
 	panic("implement me")
 }

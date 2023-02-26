@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/sonyamoonglade/sancho-backend/internal/appErrors"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
@@ -21,10 +20,7 @@ func NewProductService(productStorage storage.Product) Product {
 func (p productService) GetByID(ctx context.Context, productID string) (domain.Product, error) {
 	product, err := p.productStorage.GetByID(ctx, productID)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.Product{}, domain.ErrProductNotFound
-		}
-		return domain.Product{}, appErrors.WithContext("productStorage.GetByID", err)
+		return domain.Product{}, err
 	}
 	return product, nil
 }
@@ -44,9 +40,6 @@ func (p productService) GetProductsByIDs(ctx context.Context, ids []string) ([]d
 func (p productService) GetAllCategories(ctx context.Context, sorted bool) ([]domain.Category, error) {
 	categories, err := p.productStorage.GetAllCategories(ctx, sorted)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return categories, nil
@@ -55,10 +48,7 @@ func (p productService) GetAllCategories(ctx context.Context, sorted bool) ([]do
 func (p productService) Create(ctx context.Context, dto dto.CreateProductDTO) (string, error) {
 	category, err := p.productStorage.GetCategoryByName(ctx, dto.CategoryName)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return "", domain.ErrCategoryNotFound
-		}
-		return "", appErrors.WithContext("productStorage.GetCategoryByName", err)
+		return "", err
 	}
 
 	product := dto.ToDomain()
@@ -66,55 +56,30 @@ func (p productService) Create(ctx context.Context, dto dto.CreateProductDTO) (s
 
 	productID, err := p.productStorage.Save(ctx, product)
 	if err != nil {
-		if errors.Is(err, storage.ErrAlreadyExists) {
-			return "", domain.ErrProductAlreadyExists
-		}
-
-		return "", appErrors.WithContext("productStorage.Create", err)
+		return "", err
 	}
 
 	return productID.Hex(), nil
 }
 
 func (p productService) Delete(ctx context.Context, productID string) error {
-	if err := p.productStorage.Delete(ctx, productID); err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		return appErrors.WithContext("productStorage.Delete", err)
-	}
-	return nil
+	return p.productStorage.Delete(ctx, productID)
 }
 
 func (p productService) Update(ctx context.Context, dto dto.UpdateProductDTO) error {
-	if err := p.productStorage.Update(ctx, dto); err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		if duplicateError, ok := err.(appErrors.DuplicateError); ok {
-			return duplicateError
-		}
-		return appErrors.WithContext("productStorage.Update", err)
-	}
-	return nil
+	return p.productStorage.Update(ctx, dto)
 }
 
 func (p productService) Approve(ctx context.Context, productID string) error {
 	product, err := p.productStorage.GetByID(ctx, productID)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		return appErrors.WithContext("productStorage.GetByID", err)
+		return err
 	}
 	if product.IsApproved {
 		return domain.ErrProductAlreadyApproved
 	}
 	if err := p.productStorage.Approve(ctx, productID); err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		return appErrors.WithContext("productStorage.Approve", err)
+		return err
 	}
 	return nil
 }
@@ -122,20 +87,14 @@ func (p productService) Approve(ctx context.Context, productID string) error {
 func (p productService) Disapprove(ctx context.Context, productID string) error {
 	product, err := p.productStorage.GetByID(ctx, productID)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		return appErrors.WithContext("productStorage.GetByID", err)
+		return err
 	}
 	if !product.IsApproved {
 		return domain.ErrProductAlreadyDisapproved
 	}
 
 	if err := p.productStorage.Disapprove(ctx, productID); err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
-			return domain.ErrProductNotFound
-		}
-		return appErrors.WithContext("productStorage.Disapprove", err)
+		return err
 	}
 	return nil
 

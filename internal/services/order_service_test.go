@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
 	f "github.com/brianvoe/gofakeit/v6"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	mock_service "github.com/sonyamoonglade/sancho-backend/internal/services/mocks"
@@ -178,6 +180,70 @@ func TestCalculateCartAmount(t *testing.T) {
 			}
 		}
 	})
+	t.Run("should return 0 because no such products exist", func(t *testing.T) {
+		orderService, productService, orderStorage := getServices(t, OrderConfig{
+			PendingOrderWaitTime: time.Minute * 5,
+		})
+		_ = orderStorage
+
+		var (
+			products   []domain.Product
+			productIDs []string
+			cart       []dto.CartProductDTO
+		)
+		for i := 0; i < 5; i++ {
+			p := getProduct()
+			products = append(products, p)
+			fakeCartID := uuid.NewString()
+			productIDs = append(productIDs, fakeCartID)
+
+			quantity := int32(f.IntRange(1, 10))
+
+			// Append random productID's to cart in order to fake that products do not exist
+			cart = append(cart, dto.CartProductDTO{
+				ProductID: fakeCartID,
+				Quantity:  quantity,
+			})
+
+		}
+
+		productService.
+			EXPECT().
+			GetProductsByIDs(gomock.Any(), productIDs).
+			Return(nil, domain.ErrNoProducts).
+			Times(1)
+
+		amount, cartProducts, err := orderService.calculateCartAmount(context.Background(), cart)
+		require.Error(t, err)
+		require.Equal(t, domain.ErrNoProducts, err)
+		require.Nil(t, cartProducts)
+		require.Zero(t, amount)
+	})
+}
+
+func TestCalculateDiscountedAmount(t *testing.T) {
+
+	orderService, productService, orderStorage := getServices(t, OrderConfig{
+		PendingOrderWaitTime: time.Minute * 5,
+	})
+	_ = orderStorage
+	_ = productService
+
+	tests := []struct {
+		amount          int64
+		discountPercent float64
+		expected        int64
+	}{
+		{1000, 0.5, 500},
+		{1000, 0.6, 400},
+		{1234, 0.15, 1049},
+		{381, 0.05, 362},
+	}
+
+	for _, test := range tests {
+		require.Equal(t, test.expected, orderService.calculateDiscountedAmount(test.amount, test.discountPercent))
+	}
+
 }
 
 func getServices(t *testing.T, orderConfig OrderConfig) (*orderService, *mock_service.MockProduct, *mock_storage.MockOrder) {
@@ -195,7 +261,7 @@ func getOrder(customerID string, createdAt time.Time, cart []domain.CartProduct,
 	}
 	var (
 		amount   = f.Int64()
-		discount = int64(f.IntRange(100, 200))
+		discount = f.Float64Range(0.0, 1.0)
 	)
 	return domain.Order{
 		OrderID:           primitive.NewObjectID(),
@@ -205,7 +271,7 @@ func getOrder(customerID string, createdAt time.Time, cart []domain.CartProduct,
 		Pay:               domain.PayOnPickup,
 		Amount:            amount,
 		Discount:          discount,
-		DiscountedAmount:  amount - discount,
+		DiscountedAmount:  int64(math.Round((1 - discount) * float64(amount))),
 		Status:            orderStatus,
 		IsDelivered:       false,
 		DeliveryAddress:   nil,

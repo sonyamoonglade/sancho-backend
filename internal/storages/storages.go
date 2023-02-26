@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/sonyamoonglade/sancho-backend/pkg/database"
@@ -14,11 +13,6 @@ const (
 	CollectionCategory         = "category"
 	CollectionCustomers        = "customers"
 	CollectionAdminsAndWorkers = "adminsAndWorkers"
-)
-
-var (
-	ErrNotFound      = errors.New("not found")
-	ErrAlreadyExists = errors.New("already exists")
 )
 
 type Storages struct {

@@ -35,7 +35,23 @@ func (u userService) GetAdminByRefreshToken(ctx context.Context, adminID, token 
 }
 
 func (u userService) SaveAdmin(ctx context.Context, admin domain.Admin) (string, error) {
-	return u.userStorage.SaveAdmin(ctx, admin)
+	adminID, err := u.userStorage.SaveAdmin(ctx, admin)
+	if err != nil {
+		return "", err
+	}
+	return adminID.Hex(), nil
+}
+
+func (u userService) GetCustomerByPhoneNumber(ctx context.Context, phoneNumber string) (domain.Customer, error) {
+	return u.userStorage.GetCustomerByPhoneNumber(ctx, phoneNumber)
+}
+
+func (u userService) SaveCustomer(ctx context.Context, customer domain.Customer) (string, error) {
+	customerID, err := u.userStorage.SaveCustomer(ctx, customer)
+	if err != nil {
+		return "", err
+	}
+	return customerID.Hex(), err
 }
 
 func (u userService) SaveSession(ctx context.Context, dto dto.SaveSessionDTO) error {

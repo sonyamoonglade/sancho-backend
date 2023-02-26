@@ -19,7 +19,7 @@ type Order struct {
 	Cart              []CartProduct         `json:"cart" bson:"cart"`
 	Pay               Pay                   `json:"pay" bson:"pay"`
 	Amount            int64                 `json:"amount" bson:"amount"`
-	Discount          int64                 `json:"discount" bson:"discount"`
+	Discount          float64               `json:"discount" bson:"discount"`
 	DiscountedAmount  int64                 `json:"discountedAmount" bson:"discountedAmount"`
 	Status            OrderStatus           `json:"status" bson:"status"`
 	IsDelivered       bool                  `json:"isDelivered" bson:"isDelivered"`
@@ -38,4 +38,13 @@ type OrderDeliveryAddress struct {
 	Floor       int64     `json:"floor" bson:"floor"`
 	Apartment   int64     `json:"apartment" bson:"apartment"`
 	DeliveredAt time.Time `json:"deliveredAt" bson:"deliveredAt"`
+}
+
+func (o OrderDeliveryAddress) ToUserDeliveryAddress() *UserDeliveryAddress {
+	return &UserDeliveryAddress{
+		Address:   o.Address,
+		Entrance:  o.Entrance,
+		Floor:     o.Floor,
+		Apartment: o.Apartment,
+	}
 }

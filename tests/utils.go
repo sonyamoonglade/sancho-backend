@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"net/http"
 
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
+	"go.uber.org/zap"
 )
 
 const baseURL = "http://localhost:8000"
@@ -47,6 +50,21 @@ func checkIsDescending(arr []int32) bool {
 		}
 	}
 	return true
+}
+
+func printResponseDetails(res *http.Response) {
+	logger.Get().Info("completed test req",
+		zap.String("X-Request-ID", res.Header.Get("X-Request-ID")),
+		zap.String("URL", res.Request.URL.Path))
+}
+
+func printResponseBody(body io.ReadCloser) {
+	defer body.Close()
+	b, err := io.ReadAll(body)
+	if err != nil {
+		panic(err)
+	}
+	logger.Get().Sugar().Debugf("response body: %s\n", string(b))
 }
 
 func buildURL(path string) string {

@@ -29,7 +29,7 @@ func (p productStorage) GetByID(ctx context.Context, productID string) (domain.P
 	result := p.products.FindOne(ctx, bson.M{"_id": ToObjectID(productID)}, nil)
 	if err := result.Err(); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return domain.Product{}, ErrNotFound
+			return domain.Product{}, domain.ErrProductNotFound
 		}
 
 		return domain.Product{}, err
@@ -88,7 +88,7 @@ func (p productStorage) Save(ctx context.Context, product domain.Product) (primi
 	r, err := p.products.InsertOne(ctx, product)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return primitive.ObjectID{}, ErrAlreadyExists
+			return primitive.ObjectID{}, domain.ErrProductAlreadyExists
 		}
 		return primitive.ObjectID{}, err
 	}
@@ -101,7 +101,7 @@ func (p productStorage) Delete(ctx context.Context, productID string) error {
 		return err
 	}
 	if result.DeletedCount == 0 {
-		return ErrNotFound
+		return domain.ErrProductNotFound
 	}
 	return nil
 }
@@ -138,7 +138,7 @@ func (p productStorage) Update(ctx context.Context, dto dto.UpdateProductDTO) er
 		return err
 	}
 	if result.MatchedCount == 0 {
-		return ErrNotFound
+		return domain.ErrProductNotFound
 	}
 	return nil
 }
@@ -157,7 +157,7 @@ func (p productStorage) Approve(ctx context.Context, productID string) error {
 		return err
 	}
 	if result.MatchedCount == 0 {
-		return ErrNotFound
+		return domain.ErrProductNotFound
 	}
 	return nil
 }
@@ -176,7 +176,7 @@ func (p productStorage) Disapprove(ctx context.Context, productID string) error 
 		return err
 	}
 	if result.MatchedCount == 0 {
-		return ErrNotFound
+		return domain.ErrProductNotFound
 	}
 	return nil
 }
@@ -192,7 +192,7 @@ func (p productStorage) GetAllCategories(ctx context.Context, sorted bool) ([]do
 	cur, err := p.categories.Find(ctx, bson.M{}, opts)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrNotFound
+			return nil, domain.ErrNoCategories
 		}
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func (p productStorage) GetCategoryByName(ctx context.Context, categoryName stri
 	res := p.categories.FindOne(ctx, bson.M{"name": categoryName}, nil)
 	if err := res.Err(); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return domain.Category{}, ErrNotFound
+			return domain.Category{}, domain.ErrCategoryNotFound
 		}
 		return domain.Category{}, err
 	}

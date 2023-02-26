@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"math"
 	"time"
 
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
@@ -40,6 +41,44 @@ func (o orderService) GetOrderByNanoIDAt(ctx context.Context, nanoID string, fro
 }
 
 // todo: test
+func (o orderService) CreateWorkerOrder(ctx context.Context, dto dto.CreateWorkerOrderDTO) (string, error) {
+	amount, cartProducts, err := o.calculateCartAmount(ctx, dto.Cart)
+	if err != nil {
+		return "", err
+	}
+
+	nanoID, err := o.findNanoID(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	var (
+		// Recalculate amount with discount
+		now = time.Now().UTC()
+	)
+	order := domain.Order{
+		NanoID:           nanoID,
+		CustomerID:       dto.CustomerID,
+		Cart:             cartProducts,
+		Pay:              dto.Pay,
+		Amount:           amount,
+		Discount:         dto.DiscountPercent,
+		DiscountedAmount: o.calculateDiscountedAmount(amount, dto.DiscountPercent),
+		Status:           domain.StatusVerified,
+		IsDelivered:      dto.IsDelivered,
+		DeliveryAddress:  dto.DeliveryAddress,
+		CreatedAt:        now,
+		VerifiedAt:       &now,
+	}
+
+	orderID, err := o.orderStorage.SaveOrder(ctx, order)
+	if err != nil {
+		return "", err
+	}
+
+	return orderID.Hex(), nil
+}
+
 func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error) {
 	// Firstly, check for pending order
 	pendingOrder, err := o.GetLastOrderByCustomerID(ctx, dto.CustomerID)
@@ -62,27 +101,9 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 		return "", err
 	}
 
-	var (
-		nanoID    string
-		day       = time.Hour * 24
-		yesterday = now.Add(day * -1)
-	)
-	for {
-		nanoID, err = nanoid.GenerateNanoID()
-		if err != nil {
-			return "", err
-		}
-
-		// Look for orders within 24h to have same nanoID. It's looking in [now -24h, now]
-		_, err := o.GetOrderByNanoIDAt(ctx, nanoID, yesterday, now)
-		if err != nil {
-			// Non-duplicate nanoID has found so we stop
-			if errors.Is(err, domain.ErrOrderNotFound) {
-				break
-			}
-			// Internal error
-			return "", err
-		}
+	nanoID, err := o.findNanoID(ctx)
+	if err != nil {
+		return "", err
 	}
 
 	order := domain.Order{
@@ -97,7 +118,7 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 		Status:           domain.StatusWaitingForVerification,
 		IsDelivered:      dto.IsDelivered,
 		DeliveryAddress:  dto.DeliveryAddress,
-		CreatedAt:        time.Now().UTC(),
+		CreatedAt:        now,
 	}
 
 	orderID, err := o.orderStorage.SaveOrder(ctx, order)
@@ -120,7 +141,9 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 		return 0, nil, err
 	}
 
-	var total int64
+	var (
+		total int64
+	)
 	cartProducts := make([]domain.CartProduct, 0, len(cart))
 	for _, cartProduct := range cart {
 		for _, product := range products {
@@ -134,4 +157,37 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 		}
 	}
 	return total, cartProducts, nil
+}
+
+func (o orderService) findNanoID(ctx context.Context) (string, error) {
+	var (
+		day       = time.Hour * 24
+		now       = time.Now().UTC()
+		yesterday = now.Add(day * -1)
+		nanoID    string
+		err       error
+	)
+	for {
+		nanoID, err = nanoid.GenerateNanoID()
+		if err != nil {
+			return "", err
+		}
+
+		// Look for orders within 24h to have same nanoID. It's looking in [now -24h, now]
+		_, err := o.GetOrderByNanoIDAt(ctx, nanoID, yesterday, now)
+		if err != nil {
+			// Non-duplicate nanoID has found so we stop
+			if errors.Is(err, domain.ErrOrderNotFound) {
+				break
+			}
+			// Internal error
+			return "", err
+		}
+	}
+
+	return nanoID, nil
+}
+
+func (o orderService) calculateDiscountedAmount(amount int64, discountPercent float64) int64 {
+	return int64(math.Round((1 - discountPercent) * float64(amount)))
 }

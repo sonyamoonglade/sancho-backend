@@ -12,14 +12,9 @@ type CreateUserOrderInput struct {
 	DeliveryAddress *domain.OrderDeliveryAddress `json:"deliveryAddress,omitempty"`
 }
 
-type CartProductInput struct {
-	ProductID string `json:"productId" validate:"required"`
-	Quantity  int32  `json:"quantity" validate:"required"`
-}
-
-func (cu CreateUserOrderInput) ToDTO(customerID string) dto.CreateUserOrderDTO {
-	cart := make([]dto.CartProductDTO, 0, len(cu.Cart))
-	for _, cartProduct := range cu.Cart {
+func (c CreateUserOrderInput) ToDTO(customerID string) dto.CreateUserOrderDTO {
+	cart := make([]dto.CartProductDTO, 0, len(c.Cart))
+	for _, cartProduct := range c.Cart {
 		cart = append(cart, dto.CartProductDTO{
 			ProductID: cartProduct.ProductID,
 			Quantity:  cartProduct.Quantity,
@@ -27,9 +22,44 @@ func (cu CreateUserOrderInput) ToDTO(customerID string) dto.CreateUserOrderDTO {
 	}
 	return dto.CreateUserOrderDTO{
 		CustomerID:      customerID,
-		Pay:             cu.Pay,
+		Pay:             c.Pay,
 		Cart:            cart,
-		IsDelivered:     cu.IsDelivered,
-		DeliveryAddress: cu.DeliveryAddress,
+		IsDelivered:     c.IsDelivered,
+		DeliveryAddress: c.DeliveryAddress,
 	}
+}
+
+type CreateWorkerOrderInput struct {
+	CustomerName    string                       `json:"customerName" validate:"required"`
+	PhoneNumber     string                       `json:"phoneNumber" validate:"required"`
+	Cart            []CartProductInput           `json:"cart" validate:"required"`
+	DiscountPercent float64                      `json:"discountPercent,omitempty"`
+	Pay             domain.Pay                   `json:"pay" validate:"required"`
+	DeliveryAddress *domain.OrderDeliveryAddress `json:"deliveryAddress,omitempty"`
+	IsDelivered     bool                         `json:"isDelivered"`
+}
+
+func (c CreateWorkerOrderInput) ToDTO(customerID string) dto.CreateWorkerOrderDTO {
+	cart := make([]dto.CartProductDTO, 0, len(c.Cart))
+	for _, cartProduct := range c.Cart {
+		cart = append(cart, dto.CartProductDTO{
+			ProductID: cartProduct.ProductID,
+			Quantity:  cartProduct.Quantity,
+		})
+	}
+	return dto.CreateWorkerOrderDTO{
+		CustomerID:      customerID,
+		CustomerName:    c.CustomerName,
+		PhoneNumber:     c.PhoneNumber,
+		Cart:            cart,
+		DiscountPercent: c.DiscountPercent,
+		Pay:             c.Pay,
+		DeliveryAddress: c.DeliveryAddress,
+		IsDelivered:     c.IsDelivered,
+	}
+}
+
+type CartProductInput struct {
+	ProductID string `json:"productId" validate:"required"`
+	Quantity  int32  `json:"quantity" validate:"required"`
 }

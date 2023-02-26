@@ -237,11 +237,26 @@ func (mr *MockUserMockRecorder) GetAdminByRefreshToken(ctx, adminID, token inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdminByRefreshToken", reflect.TypeOf((*MockUser)(nil).GetAdminByRefreshToken), ctx, adminID, token)
 }
 
+// GetCustomerByPhoneNumber mocks base method.
+func (m *MockUser) GetCustomerByPhoneNumber(ctx context.Context, phoneNumber string) (domain.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByPhoneNumber", ctx, phoneNumber)
+	ret0, _ := ret[0].(domain.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByPhoneNumber indicates an expected call of GetCustomerByPhoneNumber.
+func (mr *MockUserMockRecorder) GetCustomerByPhoneNumber(ctx, phoneNumber interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByPhoneNumber", reflect.TypeOf((*MockUser)(nil).GetCustomerByPhoneNumber), ctx, phoneNumber)
+}
+
 // SaveAdmin mocks base method.
-func (m *MockUser) SaveAdmin(ctx context.Context, admin domain.Admin) (string, error) {
+func (m *MockUser) SaveAdmin(ctx context.Context, admin domain.Admin) (primitive.ObjectID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveAdmin", ctx, admin)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(primitive.ObjectID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -253,11 +268,12 @@ func (mr *MockUserMockRecorder) SaveAdmin(ctx, admin interface{}) *gomock.Call {
 }
 
 // SaveCustomer mocks base method.
-func (m *MockUser) SaveCustomer(ctx context.Context, customer domain.Customer) error {
+func (m *MockUser) SaveCustomer(ctx context.Context, customer domain.Customer) (primitive.ObjectID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveCustomer", ctx, customer)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(primitive.ObjectID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SaveCustomer indicates an expected call of SaveCustomer.
@@ -281,11 +297,12 @@ func (mr *MockUserMockRecorder) SaveSession(ctx, dto interface{}) *gomock.Call {
 }
 
 // SaveWorker mocks base method.
-func (m *MockUser) SaveWorker(ctx context.Context, worker domain.Worker) error {
+func (m *MockUser) SaveWorker(ctx context.Context, worker domain.Worker) (primitive.ObjectID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveWorker", ctx, worker)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(primitive.ObjectID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SaveWorker indicates an expected call of SaveWorker.

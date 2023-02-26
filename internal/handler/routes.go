@@ -31,12 +31,18 @@ func (h Handler) initAdminsAPI(api fiber.Router) {
 
 func (h Handler) initOrdersAPI(api fiber.Router) {
 	m := h.middlewares
-	var (
-		customerAuth = m.JWTAuth.Use(domain.RoleCustomer)
-	)
 
+	customerAuth := m.JWTAuth.Use(domain.RoleCustomer)
+	// Don't order.Use(customerAuth), because not all /order requests require auth.
 	order := api.Group("/order")
 	{
-		order.Post("/createUserOrder", customerAuth, h.CreateUserOrder)
+		order.Post("/create", customerAuth, h.CreateUserOrder)
+
+		{
+			worker := order.Group("/worker")
+			worker.Use(m.JWTAuth.Use(domain.RoleWorker))
+
+			worker.Post("/create", h.CreateWorkerOrder)
+		}
 	}
 }

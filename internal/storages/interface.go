@@ -25,10 +25,11 @@ type Product interface {
 type User interface {
 	GetAdminByLogin(ctx context.Context, login string) (domain.Admin, error)
 	GetAdminByRefreshToken(ctx context.Context, adminID, token string) (domain.Admin, error)
+	GetCustomerByPhoneNumber(ctx context.Context, phoneNumber string) (domain.Customer, error)
 
-	SaveAdmin(ctx context.Context, admin domain.Admin) (string, error)
-	SaveCustomer(ctx context.Context, customer domain.Customer) error
-	SaveWorker(ctx context.Context, worker domain.Worker) error
+	SaveAdmin(ctx context.Context, admin domain.Admin) (primitive.ObjectID, error)
+	SaveCustomer(ctx context.Context, customer domain.Customer) (primitive.ObjectID, error)
+	SaveWorker(ctx context.Context, worker domain.Worker) (primitive.ObjectID, error)
 
 	SaveSession(ctx context.Context, dto dto.SaveSessionDTO) error
 }

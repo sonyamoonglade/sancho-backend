@@ -52,9 +52,9 @@
     "indexes": [
       {
         "key": {
-          "niceOrderId": 1
+          "nanoId": 1
         },
-        "name": "nice_order_id_unique",
+        "name": "nano_id_unique",
         "unique": true
       }
     ]

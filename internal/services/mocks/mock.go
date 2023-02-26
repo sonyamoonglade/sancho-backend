@@ -207,6 +207,21 @@ func (mr *MockOrderMockRecorder) CreateUserOrder(ctx, dto interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserOrder", reflect.TypeOf((*MockOrder)(nil).CreateUserOrder), ctx, dto)
 }
 
+// CreateWorkerOrder mocks base method.
+func (m *MockOrder) CreateWorkerOrder(ctx context.Context, orderDTO dto.CreateWorkerOrderDTO) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWorkerOrder", ctx, orderDTO)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWorkerOrder indicates an expected call of CreateWorkerOrder.
+func (mr *MockOrderMockRecorder) CreateWorkerOrder(ctx, orderDTO interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkerOrder", reflect.TypeOf((*MockOrder)(nil).CreateWorkerOrder), ctx, orderDTO)
+}
+
 // GetLastOrderByCustomerID mocks base method.
 func (m *MockOrder) GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error) {
 	m.ctrl.T.Helper()
@@ -305,6 +320,21 @@ func (mr *MockUserMockRecorder) GetAdminByRefreshToken(ctx, adminID, token inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAdminByRefreshToken", reflect.TypeOf((*MockUser)(nil).GetAdminByRefreshToken), ctx, adminID, token)
 }
 
+// GetCustomerByPhoneNumber mocks base method.
+func (m *MockUser) GetCustomerByPhoneNumber(ctx context.Context, phoneNumber string) (domain.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByPhoneNumber", ctx, phoneNumber)
+	ret0, _ := ret[0].(domain.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByPhoneNumber indicates an expected call of GetCustomerByPhoneNumber.
+func (mr *MockUserMockRecorder) GetCustomerByPhoneNumber(ctx, phoneNumber interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByPhoneNumber", reflect.TypeOf((*MockUser)(nil).GetCustomerByPhoneNumber), ctx, phoneNumber)
+}
+
 // SaveAdmin mocks base method.
 func (m *MockUser) SaveAdmin(ctx context.Context, admin domain.Admin) (string, error) {
 	m.ctrl.T.Helper()
@@ -318,6 +348,21 @@ func (m *MockUser) SaveAdmin(ctx context.Context, admin domain.Admin) (string, e
 func (mr *MockUserMockRecorder) SaveAdmin(ctx, admin interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAdmin", reflect.TypeOf((*MockUser)(nil).SaveAdmin), ctx, admin)
+}
+
+// SaveCustomer mocks base method.
+func (m *MockUser) SaveCustomer(ctx context.Context, customer domain.Customer) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveCustomer", ctx, customer)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SaveCustomer indicates an expected call of SaveCustomer.
+func (mr *MockUserMockRecorder) SaveCustomer(ctx, customer interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCustomer", reflect.TypeOf((*MockUser)(nil).SaveCustomer), ctx, customer)
 }
 
 // SaveSession mocks base method.
@@ -400,4 +445,19 @@ func (m *MockAuth) RegisterAdmin(ctx context.Context, dto dto.RegisterAdminDTO) 
 func (mr *MockAuthMockRecorder) RegisterAdmin(ctx, dto interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAdmin", reflect.TypeOf((*MockAuth)(nil).RegisterAdmin), ctx, dto)
+}
+
+// RegisterCustomer mocks base method.
+func (m *MockAuth) RegisterCustomer(ctx context.Context, dto dto.RegisterCustomerDTO) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterCustomer", ctx, dto)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegisterCustomer indicates an expected call of RegisterCustomer.
+func (mr *MockAuthMockRecorder) RegisterCustomer(ctx, dto interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterCustomer", reflect.TypeOf((*MockAuth)(nil).RegisterCustomer), ctx, dto)
 }

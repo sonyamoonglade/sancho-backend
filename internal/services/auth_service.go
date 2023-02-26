@@ -51,6 +51,22 @@ func (a authService) RegisterAdmin(ctx context.Context, dto dto.RegisterAdminDTO
 	return adminID, nil
 }
 
+func (a authService) RegisterCustomer(ctx context.Context, dto dto.RegisterCustomerDTO) (string, error) {
+	customer := domain.Customer{
+		PhoneNumber: dto.PhoneNumber,
+		Role:        domain.RoleCustomer,
+		Session:     nil,
+	}
+	if dto.DeliveryAddress != nil {
+		customer.DeliveryAddress = dto.DeliveryAddress
+	}
+	if dto.CustomerName != nil {
+		customer.Name = dto.CustomerName
+	}
+
+	return a.userService.SaveCustomer(ctx, customer)
+}
+
 func (a authService) LoginAdmin(ctx context.Context, loginDto dto.LoginAdminDTO) (auth.Pair, error) {
 	var (
 		accessTokenTTL  = a.ttlStrategy.AccessTokenTTLs[domain.RoleAdmin]
@@ -95,7 +111,6 @@ func (a authService) RefreshAdminToken(ctx context.Context, adminID, token strin
 		accessTokenTTL  = a.ttlStrategy.AccessTokenTTLs[domain.RoleAdmin]
 		refreshTokenTTL = a.ttlStrategy.RefreshTokenTTL[domain.RoleAdmin]
 	)
-
 	admin, err := a.userService.GetAdminByRefreshToken(ctx, adminID, token)
 	if err != nil {
 		return auth.Pair{}, err

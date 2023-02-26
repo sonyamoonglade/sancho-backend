@@ -25,18 +25,23 @@ type Order interface {
 	GetOrderByID(ctx context.Context, orderID string) (domain.Order, error)
 	GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error)
 	GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error)
+
 	CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error)
+	CreateWorkerOrder(ctx context.Context, orderDTO dto.CreateWorkerOrderDTO) (string, error)
 }
 
 type User interface {
-	SaveAdmin(ctx context.Context, admin domain.Admin) (string, error)
 	GetAdminByLogin(ctx context.Context, login string) (domain.Admin, error)
 	GetAdminByRefreshToken(ctx context.Context, adminID, token string) (domain.Admin, error)
+	GetCustomerByPhoneNumber(ctx context.Context, phoneNumber string) (domain.Customer, error)
 
+	SaveAdmin(ctx context.Context, admin domain.Admin) (string, error)
+	SaveCustomer(ctx context.Context, customer domain.Customer) (string, error)
 	SaveSession(ctx context.Context, dto dto.SaveSessionDTO) error
 }
 
 type Auth interface {
+	RegisterCustomer(ctx context.Context, dto dto.RegisterCustomerDTO) (string, error)
 	RegisterAdmin(ctx context.Context, dto dto.RegisterAdminDTO) (string, error)
 	LoginAdmin(ctx context.Context, dto dto.LoginAdminDTO) (auth.Pair, error)
 	RefreshAdminToken(ctx context.Context, adminID, token string) (auth.Pair, error)

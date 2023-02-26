@@ -19,9 +19,9 @@ func (s *APISuite) TestCreateProduct() {
 		require = s.Require()
 	)
 
-	t.Run("should create product because category exists", func(t *testing.T) {
+	t.Run("should create product", func(t *testing.T) {
 		inputBody := newBody(input.CreateProductInput{
-			Name:         f.BeerName(),
+			Name:         f.LoremIpsumSentence(3),
 			TranslateRU:  f.Word(),
 			Description:  f.LoremIpsumSentence(5),
 			CategoryName: categoryPizza.Name,
@@ -36,6 +36,7 @@ func (s *APISuite) TestCreateProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusCreated, res.StatusCode)
 	})
@@ -57,6 +58,7 @@ func (s *APISuite) TestCreateProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusNotFound, res.StatusCode)
 	})
@@ -80,6 +82,7 @@ func (s *APISuite) TestCreateProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusConflict, res.StatusCode)
 	})
@@ -101,6 +104,7 @@ func (s *APISuite) TestDeleteProduct() {
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusOK, res.StatusCode)
 	})
@@ -115,6 +119,7 @@ func (s *APISuite) TestDeleteProduct() {
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusNotFound, res.StatusCode)
 	})
@@ -138,6 +143,7 @@ func (s *APISuite) TestApproveProduct() {
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusOK, res.StatusCode)
 	})
@@ -170,6 +176,7 @@ func (s *APISuite) TestApproveProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusBadRequest, res.StatusCode)
 	})
@@ -208,6 +215,7 @@ func (s *APISuite) TestDisapproveProduct() {
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusOK, res.StatusCode)
 	})
@@ -235,6 +243,7 @@ func (s *APISuite) TestDisapproveProduct() {
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusBadRequest, res.StatusCode)
 	})
@@ -249,6 +258,7 @@ func (s *APISuite) TestDisapproveProduct() {
 		})
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusNotFound, res.StatusCode)
 	})
@@ -292,6 +302,7 @@ func (s *APISuite) TestUpdateProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusOK, res.StatusCode)
 
@@ -324,6 +335,7 @@ func (s *APISuite) TestUpdateProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusNotFound, res.StatusCode)
 	})
@@ -371,6 +383,7 @@ func (s *APISuite) TestUpdateProduct() {
 		req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := s.app.Test(req, -1)
+		printResponseDetails(res)
 		require.NoError(err)
 		require.Equal(http.StatusConflict, res.StatusCode)
 

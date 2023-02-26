@@ -15,6 +15,12 @@ type LoginAdminDTO struct {
 	Password string
 }
 
+type RegisterCustomerDTO struct {
+	PhoneNumber     string
+	CustomerName    *string
+	DeliveryAddress *domain.UserDeliveryAddress
+}
+
 type RegisterAdminDTO struct {
 	Login    string
 	Password string

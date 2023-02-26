@@ -7,10 +7,12 @@ import (
 
 	"github.com/sonyamoonglade/sancho-backend/internal/appErrors"
 	"github.com/sonyamoonglade/sancho-backend/internal/domain"
+	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 )
 
 type orderStorage struct {
@@ -93,6 +95,7 @@ func (o orderStorage) GetOrderByNanoIDAt(ctx context.Context, nanoID string, fro
 }
 
 func (o orderStorage) SaveOrder(ctx context.Context, order domain.Order) (primitive.ObjectID, error) {
+	logger.Get().Debug("saved nano id", zap.String("nanoID", order.NanoID))
 	result, err := o.orders.InsertOne(ctx, order)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {

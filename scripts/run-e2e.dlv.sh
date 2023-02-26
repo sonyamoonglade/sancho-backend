@@ -13,7 +13,7 @@ CONTAINER_ID=$(docker run --rm -d -p $MONGO_TEST_PORT:27017 --name=$CONTAINER_NA
 # run migrations
 docker run -v $APP_SRC/migrations:/migrations --network host --rm migrate/migrate -path=/migrations/ -database $MONGO_URI/$DB_NAME up
 # run tests
-go test -count=1 ./tests/
+dlv test ./tests/
 
 printf "container: %s\n" "$CONTAINER_ID"
 read -p "Press enter to remove > "

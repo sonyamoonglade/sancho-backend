@@ -27,8 +27,8 @@ var (
 	products = []interface{}{
 		domain.Product{
 			ProductID:   primitive.NewObjectID(),
-			Name:        f.BeerName(),
-			TranslateRU: f.BeerName(),
+			Name:        f.LoremIpsumSentence(4),
+			TranslateRU: f.LoremIpsumSentence(5),
 			Description: f.LoremIpsumSentence(10),
 			ImageURL:    StringPtr(f.ImageURL(200, 200)),
 			IsApproved:  false,
@@ -48,8 +48,8 @@ var (
 		},
 		domain.Product{
 			ProductID:   primitive.NewObjectID(),
-			Name:        f.BeerName(),
-			TranslateRU: f.BeerName(),
+			Name:        f.LoremIpsumSentence(2),
+			TranslateRU: f.LoremIpsumSentence(5),
 			Description: f.LoremIpsumSentence(10),
 			ImageURL:    StringPtr(f.ImageURL(200, 200)),
 			IsApproved:  true,
@@ -75,7 +75,19 @@ var (
 			Apartment: 73,
 		},
 		Role: domain.RoleCustomer,
-		Name: "Филипп",
+		Name: StringPtr("Филипп"),
+		Session: &domain.Session{
+			RefreshToken: uuid.NewString(),
+			ExpiresAt:    time.Now().UTC().Add(time.Hour * 24),
+		},
+	}
+
+	worker = domain.Worker{
+		UserID:   primitive.NewObjectID(),
+		Name:     "Георгий",
+		Login:    "jqkweixuch",
+		Password: "kasdsjd*&1231mz",
+		Role:     domain.RoleWorker,
 		Session: domain.Session{
 			RefreshToken: uuid.NewString(),
 			ExpiresAt:    time.Now().UTC().Add(time.Hour * 24),

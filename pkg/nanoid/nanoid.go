@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	random = "ABCDEFGHYJKLMNOPQRCTUVWXYZ0123456789"
-	size   = 6
+	random = "A1B2C3D4E5F6G7H8"
+	size   = 5
 )
 
 // GenerateNanoID will generate 6 char sequence from english alphabet and numbers

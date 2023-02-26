@@ -1,16 +1,23 @@
 package domain
 
 import (
+	"errors"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+var (
+	ErrCustomerNotFound = errors.New("customer not found")
+	ErrCustomerExists   = errors.New("customer with such phone number exists")
 )
 
 type Customer struct {
 	UserID          primitive.ObjectID   `json:"userId" bson:"_id,omitempty"`
-	PhoneNumber     string               `json:"phoneNumber" bson:"phoneNumber"`
-	DeliveryAddress *UserDeliveryAddress `json:"deliveryAddress,omitempty" bson:"deliveryAddress,omitempty"`
 	Role            Role                 `json:"role" bson:"role"`
-	Name            string               `json:"name" bson:"name"`
-	Session         Session              `json:"session,omitempty" bson:"session,omitempty"`
+	PhoneNumber     string               `json:"phoneNumber" bson:"phoneNumber"`
+	Name            *string              `json:"name,omitempty" bson:"name,omitempty"`
+	DeliveryAddress *UserDeliveryAddress `json:"deliveryAddress,omitempty" bson:"deliveryAddress,omitempty"`
+	Session         *Session             `json:"session,omitempty" bson:"session,omitempty"`
 }
 
 type UserDeliveryAddress struct {

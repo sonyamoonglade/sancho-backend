@@ -12,6 +12,7 @@ func (s *APISuite) TestGetCatalog() {
 	req, _ := http.NewRequest(http.MethodGet, buildURL("/api/products/catalog"), nil)
 
 	res, err := s.app.Test(req)
+	printResponseDetails(res)
 	require.NoError(err)
 	require.Equal(http.StatusOK, res.StatusCode)
 
@@ -40,6 +41,7 @@ func (s *APISuite) TestGetCategories() {
 	req, _ := http.NewRequest(http.MethodGet, buildURL("/api/products/categories?sorted=1"), nil)
 
 	res, err := s.app.Test(req)
+	printResponseDetails(res)
 	require.NoError(err)
 	require.Equal(http.StatusOK, res.StatusCode)
 

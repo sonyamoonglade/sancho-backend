@@ -20,5 +20,5 @@ mocks: premock
 	mockgen -source ${SERVICE_MOCKS_SRC} -destination ${SERVICE_MOCKS_DST}
 	mockgen -source ${STORAGE_MOCKS_SRC} -destination ${STORAGE_MOCKS_DST}
 
-unit-test:
+unit-test: mocks
 	go test -short -race ./...
