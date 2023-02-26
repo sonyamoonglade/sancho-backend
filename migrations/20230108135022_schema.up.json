@@ -1,6 +1,6 @@
 [
   {
-    "createIndexes": "category",
+    "createIndexes": "categories",
     "indexes": [
       {
         "key": {
@@ -12,7 +12,7 @@
     ]
   },
   {
-    "createIndexes": "product",
+    "createIndexes": "products",
     "indexes": [
       {
         "key": {

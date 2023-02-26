@@ -9,8 +9,8 @@ import (
 
 const (
 	CollectionOrders           = "orders"
-	CollectionProduct          = "product"
-	CollectionCategory         = "category"
+	CollectionProduct          = "products"
+	CollectionCategory         = "categories"
 	CollectionCustomers        = "customers"
 	CollectionAdminsAndWorkers = "adminsAndWorkers"
 )
