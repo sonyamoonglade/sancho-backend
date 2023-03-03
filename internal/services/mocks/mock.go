@@ -192,6 +192,36 @@ func (m *MockOrder) EXPECT() *MockOrderMockRecorder {
 	return m.recorder
 }
 
+// CalculateCartAmount mocks base method.
+func (m *MockOrder) CalculateCartAmount(ctx context.Context, cart []dto.CartProductDTO) (int64, []domain.CartProduct, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CalculateCartAmount", ctx, cart)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].([]domain.CartProduct)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CalculateCartAmount indicates an expected call of CalculateCartAmount.
+func (mr *MockOrderMockRecorder) CalculateCartAmount(ctx, cart interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateCartAmount", reflect.TypeOf((*MockOrder)(nil).CalculateCartAmount), ctx, cart)
+}
+
+// CalculateDiscountedAmount mocks base method.
+func (m *MockOrder) CalculateDiscountedAmount(amount int64, discountPercent float64) int64 {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CalculateDiscountedAmount", amount, discountPercent)
+	ret0, _ := ret[0].(int64)
+	return ret0
+}
+
+// CalculateDiscountedAmount indicates an expected call of CalculateDiscountedAmount.
+func (mr *MockOrderMockRecorder) CalculateDiscountedAmount(amount, discountPercent interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalculateDiscountedAmount", reflect.TypeOf((*MockOrder)(nil).CalculateDiscountedAmount), amount, discountPercent)
+}
+
 // CreateUserOrder mocks base method.
 func (m *MockOrder) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error) {
 	m.ctrl.T.Helper()

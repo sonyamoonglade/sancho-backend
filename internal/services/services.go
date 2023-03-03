@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/sonyamoonglade/sancho-backend/internal/domain"
 	storage "github.com/sonyamoonglade/sancho-backend/internal/storages"
 	"github.com/sonyamoonglade/sancho-backend/pkg/auth"
 )
@@ -15,6 +16,7 @@ type Services struct {
 type Deps struct {
 	Storages      *storage.Storages
 	TokenProvider auth.TokenProvider
+	MetaProvider  domain.MetaProvider
 	Hasher        Hasher
 	TTLStrategy   TTLStrategy
 	OrderConfig   OrderConfig
@@ -28,6 +30,6 @@ func NewServices(deps Deps) *Services {
 		Product: productService,
 		User:    userService,
 		Auth:    NewAuthService(userService, deps.TokenProvider, deps.Hasher, deps.TTLStrategy),
-		Order:   NewOrderService(stg.Order, productService, deps.OrderConfig),
+		Order:   NewOrderService(stg.Order, productService, deps.OrderConfig, deps.MetaProvider),
 	}
 }

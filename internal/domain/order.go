@@ -7,6 +7,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	invalidEntrance     = "invalid entrance"
+	invalidFloor        = "invalid floor"
+	invalidApartment    = "invalid apartment"
+	invalidDeliveryTime = "invalid delivery time"
+)
+
 var (
 	ErrOrderNotFound    = errors.New("order not found")
 	ErrHavePendingOrder = errors.New("have pending order")
@@ -40,11 +47,27 @@ type OrderDeliveryAddress struct {
 	DeliveredAt time.Time `json:"deliveredAt" bson:"deliveredAt"`
 }
 
-func (o OrderDeliveryAddress) ToUserDeliveryAddress() *UserDeliveryAddress {
+func (o *OrderDeliveryAddress) ToUserDeliveryAddress() *UserDeliveryAddress {
 	return &UserDeliveryAddress{
 		Address:   o.Address,
 		Entrance:  o.Entrance,
 		Floor:     o.Floor,
 		Apartment: o.Apartment,
 	}
+}
+
+func (o *OrderDeliveryAddress) IsValid() (bool, string) {
+	if o.Entrance <= 0 {
+		return false, invalidEntrance
+	}
+	if o.Apartment <= 0 {
+		return false, invalidApartment
+	}
+	if o.Floor <= 0 {
+		return false, invalidFloor
+	}
+	if o.DeliveredAt.Before(time.Now().UTC()) {
+		return false, invalidDeliveryTime
+	}
+	return true, ""
 }

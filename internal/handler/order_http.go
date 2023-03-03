@@ -26,6 +26,11 @@ func (h Handler) CreateUserOrder(c *fiber.Ctx) error {
 	if ok, msg := validation.ValidateCart(inp.Cart); !ok {
 		return c.Status(http.StatusBadRequest).SendString(msg)
 	}
+	if inp.IsDelivered {
+		if ok, msg := inp.DeliveryAddress.IsValid(); !ok {
+			return c.Status(http.StatusBadRequest).SendString(msg)
+		}
+	}
 
 	customerID, err := middleware.GetUserIDFromCtx(c)
 	if err != nil {
@@ -55,6 +60,11 @@ func (h Handler) CreateWorkerOrder(c *fiber.Ctx) error {
 	}
 	if ok, msg := validation.ValidateCart(inp.Cart); !ok {
 		return c.Status(http.StatusBadRequest).SendString(msg)
+	}
+	if inp.IsDelivered {
+		if ok, msg := inp.DeliveryAddress.IsValid(); !ok {
+			return c.Status(http.StatusBadRequest).SendString(msg)
+		}
 	}
 
 	var customerID string

@@ -28,6 +28,9 @@ type Order interface {
 
 	CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error)
 	CreateWorkerOrder(ctx context.Context, orderDTO dto.CreateWorkerOrderDTO) (string, error)
+
+	CalculateDiscountedAmount(amount int64, discountPercent float64) int64
+	CalculateCartAmount(ctx context.Context, cart []dto.CartProductDTO) (int64, []domain.CartProduct, error)
 }
 
 type User interface {

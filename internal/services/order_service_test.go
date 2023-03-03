@@ -13,6 +13,7 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/internal/services/dto"
 	mock_service "github.com/sonyamoonglade/sancho-backend/internal/services/mocks"
 	mock_storage "github.com/sonyamoonglade/sancho-backend/internal/storages/mocks"
+	"github.com/sonyamoonglade/sancho-backend/pkg/meta_cache"
 	"github.com/sonyamoonglade/sancho-backend/pkg/nanoid"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -157,7 +158,7 @@ func TestCalculateCartAmount(t *testing.T) {
 			Return(products, nil).
 			Times(1)
 
-		amount, cartProducts, err := orderService.calculateCartAmount(context.Background(), cart)
+		amount, cartProducts, err := orderService.CalculateCartAmount(context.Background(), cart)
 		require.NoError(t, err)
 		require.NotNil(t, cartProducts)
 		require.Equal(t, total, amount)
@@ -213,7 +214,7 @@ func TestCalculateCartAmount(t *testing.T) {
 			Return(nil, domain.ErrNoProducts).
 			Times(1)
 
-		amount, cartProducts, err := orderService.calculateCartAmount(context.Background(), cart)
+		amount, cartProducts, err := orderService.CalculateCartAmount(context.Background(), cart)
 		require.Error(t, err)
 		require.Equal(t, domain.ErrNoProducts, err)
 		require.Nil(t, cartProducts)
@@ -241,7 +242,7 @@ func TestCalculateDiscountedAmount(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		require.Equal(t, test.expected, orderService.calculateDiscountedAmount(test.amount, test.discountPercent))
+		require.Equal(t, test.expected, orderService.CalculateDiscountedAmount(test.amount, test.discountPercent))
 	}
 
 }
@@ -250,7 +251,12 @@ func getServices(t *testing.T, orderConfig OrderConfig) (*orderService, *mock_se
 	ctrl := gomock.NewController(t)
 	orderStorage := mock_storage.NewMockOrder(ctrl)
 	productService := mock_service.NewMockProduct(ctrl)
-	ordService := NewOrderService(orderStorage, productService, orderConfig)
+	metaCache := meta_cache.NewMetaCache()
+	metaCache.Set(domain.BusinessMeta{
+		DeliveryPunishmentThreshold: 400,
+		DeliveryPunishmentValue:     100,
+	})
+	ordService := NewOrderService(orderStorage, productService, orderConfig, metaCache)
 	return ordService.(*orderService), productService, orderStorage
 }
 

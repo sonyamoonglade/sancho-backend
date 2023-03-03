@@ -3,10 +3,11 @@
 MONGO_TEST_PORT=27019
 MONGO_IMAGE="mongo:6"
 CONTAINER_NAME="debug_mongo-e2e"
+MONGO_URI=mongodb://localhost:$MONGO_TEST_PORT
 APP_SRC=$(cat .env | grep "APP_SRC" | cut -d "=" -f2)
 DB_NAME="testdb"
 
-export MONGO_URI=mongodb://localhost:$MONGO_TEST_PORT
+export MONGO_URI=$MONGO_URI
 export DB_NAME=$DB_NAME
 # run mongo
 CONTAINER_ID=$(docker run --rm -d -p $MONGO_TEST_PORT:27017 --name=$CONTAINER_NAME -e MONGODB_DATABASE=$DB_NAME $MONGO_IMAGE)

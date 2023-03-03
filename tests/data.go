@@ -94,6 +94,11 @@ var (
 		},
 	}
 
+	meta = domain.BusinessMeta{
+		DeliveryPunishmentThreshold: 500,
+		DeliveryPunishmentValue:     100,
+	}
+
 	ttlStrategy = service.TTLStrategy{
 		AccessTokenTTLs: map[domain.Role]time.Duration{
 			domain.RoleAdmin:    time.Second * 60,

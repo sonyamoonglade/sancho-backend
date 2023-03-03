@@ -15,6 +15,7 @@ import (
 	"github.com/sonyamoonglade/sancho-backend/pkg/database"
 	"github.com/sonyamoonglade/sancho-backend/pkg/hash"
 	"github.com/sonyamoonglade/sancho-backend/pkg/logger"
+	"github.com/sonyamoonglade/sancho-backend/pkg/meta_cache"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -95,12 +96,17 @@ func (s *APISuite) initDeps(mongo *database.Mongo) {
 		panic(err)
 	}
 
+	metaCache := meta_cache.NewMetaCache()
+	metaCache.Set(meta)
+
 	storages := storage.NewStorages(mongo)
 	services := service.NewServices(service.Deps{
 		Storages:      storages,
 		TokenProvider: tokenProvider,
+		MetaProvider:  metaCache,
 		Hasher:        hash.NewSHA1Hasher(),
 		TTLStrategy:   ttlStrategy,
+		OrderConfig:   service.OrderConfig{},
 	})
 
 	jwtAuth := middleware.NewJWTAuthMiddleware(services.Auth, tokenProvider)

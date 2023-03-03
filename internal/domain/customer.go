@@ -26,3 +26,7 @@ type UserDeliveryAddress struct {
 	Floor     int64  `json:"floor" bson:"floor"`
 	Apartment int64  `json:"apartment" bson:"apartment"`
 }
+
+func (o *UserDeliveryAddress) IsValid() bool {
+	return o.Entrance > 0 && o.Apartment > 0 && o.Floor > 0
+}

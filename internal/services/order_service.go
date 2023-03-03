@@ -19,30 +19,39 @@ type OrderConfig struct {
 }
 
 type orderService struct {
-	orderStorage   storage.Order
-	productService Product
-	orderConfig    OrderConfig
+	orderStorage         storage.Order
+	productService       Product
+	orderConfig          OrderConfig
+	businessMetaProvider domain.MetaProvider
 }
 
-func NewOrderService(orderStorage storage.Order, productService Product, orderConfig OrderConfig) Order {
-	return &orderService{orderStorage: orderStorage, productService: productService, orderConfig: orderConfig}
+func NewOrderService(orderStorage storage.Order,
+	productService Product,
+	orderConfig OrderConfig,
+	metaProvider domain.MetaProvider) Order {
+	return &orderService{
+		orderStorage:         orderStorage,
+		productService:       productService,
+		orderConfig:          orderConfig,
+		businessMetaProvider: metaProvider,
+	}
 }
 
-func (o orderService) GetOrderByID(ctx context.Context, orderID string) (domain.Order, error) {
+func (o *orderService) GetOrderByID(ctx context.Context, orderID string) (domain.Order, error) {
 	return o.orderStorage.GetOrderByID(ctx, orderID)
 }
 
-func (o orderService) GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error) {
+func (o *orderService) GetLastOrderByCustomerID(ctx context.Context, customerID string) (domain.Order, error) {
 	return o.orderStorage.GetLastOrderByCustomerID(ctx, customerID)
 }
 
-func (o orderService) GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error) {
+func (o *orderService) GetOrderByNanoIDAt(ctx context.Context, nanoID string, from, to time.Time) (domain.Order, error) {
 	return o.orderStorage.GetOrderByNanoIDAt(ctx, nanoID, from, to)
 }
 
 // todo: test
-func (o orderService) CreateWorkerOrder(ctx context.Context, dto dto.CreateWorkerOrderDTO) (string, error) {
-	amount, cartProducts, err := o.calculateCartAmount(ctx, dto.Cart)
+func (o *orderService) CreateWorkerOrder(ctx context.Context, dto dto.CreateWorkerOrderDTO) (string, error) {
+	amount, cartProducts, err := o.CalculateCartAmount(ctx, dto.Cart)
 	if err != nil {
 		return "", err
 	}
@@ -52,10 +61,7 @@ func (o orderService) CreateWorkerOrder(ctx context.Context, dto dto.CreateWorke
 		return "", err
 	}
 
-	var (
-		// Recalculate amount with discount
-		now = time.Now().UTC()
-	)
+	now := time.Now().UTC()
 	order := domain.Order{
 		NanoID:           nanoID,
 		CustomerID:       dto.CustomerID,
@@ -63,12 +69,19 @@ func (o orderService) CreateWorkerOrder(ctx context.Context, dto dto.CreateWorke
 		Pay:              dto.Pay,
 		Amount:           amount,
 		Discount:         dto.DiscountPercent,
-		DiscountedAmount: o.calculateDiscountedAmount(amount, dto.DiscountPercent),
+		DiscountedAmount: o.CalculateDiscountedAmount(amount, dto.DiscountPercent),
 		Status:           domain.StatusVerified,
 		IsDelivered:      dto.IsDelivered,
 		DeliveryAddress:  dto.DeliveryAddress,
 		CreatedAt:        now,
 		VerifiedAt:       &now,
+	}
+
+	if dto.IsDelivered && dto.DeliveryAddress != nil {
+		meta := o.businessMetaProvider.Get()
+		if order.Amount > meta.DeliveryPunishmentThreshold {
+			order.DiscountedAmount = o.applyPunishment(order.DiscountedAmount, meta.DeliveryPunishmentValue)
+		}
 	}
 
 	orderID, err := o.orderStorage.SaveOrder(ctx, order)
@@ -79,7 +92,7 @@ func (o orderService) CreateWorkerOrder(ctx context.Context, dto dto.CreateWorke
 	return orderID.Hex(), nil
 }
 
-func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error) {
+func (o *orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrderDTO) (string, error) {
 	// Firstly, check for pending order
 	pendingOrder, err := o.GetLastOrderByCustomerID(ctx, dto.CustomerID)
 	if err != nil && !errors.Is(err, domain.ErrOrderNotFound) {
@@ -96,7 +109,7 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 		return "", domain.ErrHavePendingOrder
 	}
 
-	amount, cartProducts, err := o.calculateCartAmount(ctx, dto.Cart)
+	amount, cartProducts, err := o.CalculateCartAmount(ctx, dto.Cart)
 	if err != nil {
 		return "", err
 	}
@@ -121,6 +134,13 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 		CreatedAt:        now,
 	}
 
+	if dto.IsDelivered && dto.DeliveryAddress != nil {
+		meta := o.businessMetaProvider.Get()
+		if order.Amount > meta.DeliveryPunishmentThreshold {
+			order.DiscountedAmount = o.applyPunishment(order.DiscountedAmount, meta.DeliveryPunishmentValue)
+		}
+	}
+
 	orderID, err := o.orderStorage.SaveOrder(ctx, order)
 	if err != nil {
 		return "", err
@@ -129,8 +149,12 @@ func (o orderService) CreateUserOrder(ctx context.Context, dto dto.CreateUserOrd
 	return orderID.Hex(), nil
 }
 
+func (o *orderService) CalculateDiscountedAmount(amount int64, discountPercent float64) int64 {
+	return int64(math.Round((1 - discountPercent) * float64(amount)))
+}
+
 //todo: test
-func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartProductDTO) (int64, []domain.CartProduct, error) {
+func (o *orderService) CalculateCartAmount(ctx context.Context, cart []dto.CartProductDTO) (int64, []domain.CartProduct, error) {
 	productIDs := make([]string, 0, len(cart))
 	for _, product := range cart {
 		productIDs = append(productIDs, product.ProductID)
@@ -142,9 +166,9 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 	}
 
 	var (
-		total int64
+		total        int64
+		cartProducts = make([]domain.CartProduct, 0, len(cart))
 	)
-	cartProducts := make([]domain.CartProduct, 0, len(cart))
 	for _, cartProduct := range cart {
 		for _, product := range products {
 			if cartProduct.ProductID == product.ProductID.Hex() {
@@ -159,7 +183,7 @@ func (o orderService) calculateCartAmount(ctx context.Context, cart []dto.CartPr
 	return total, cartProducts, nil
 }
 
-func (o orderService) findNanoID(ctx context.Context) (string, error) {
+func (o *orderService) findNanoID(ctx context.Context) (string, error) {
 	var (
 		day       = time.Hour * 24
 		now       = time.Now().UTC()
@@ -188,6 +212,6 @@ func (o orderService) findNanoID(ctx context.Context) (string, error) {
 	return nanoID, nil
 }
 
-func (o orderService) calculateDiscountedAmount(amount int64, discountPercent float64) int64 {
-	return int64(math.Round((1 - discountPercent) * float64(amount)))
+func (o *orderService) applyPunishment(origin, punishment int64) int64 {
+	return origin + punishment
 }
